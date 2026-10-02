@@ -1,0 +1,902 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%2316161b'/%3E%3Crect x='20' y='20' width='60' height='14' fill='%23c93d14'/%3E%3Crect x='20' y='44' width='60' height='8' fill='%23f2efe8'/%3E%3Crect x='20' y='60' width='40' height='8' fill='%23f2efe8'/%3E%3C/svg%3E">
+<title>블로그 만들기 2일차 · Claude Code × Supabase</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#f2efe8;--ink:#16161b;--panel:#fbfaf6;--panel2:#e9e5db;
+  --line:rgba(22,22,27,.28);--text:#16161b;--dim:#5f5e58;
+  --acc:#c93d14;--green:#1b7f52;--blue:#2147c9;--amber:#a96b00;
+  /* 이전 이름 호환 */
+  --bg:var(--paper);--yellow:var(--acc);--pink:var(--acc);--red:var(--acc);--orange:var(--amber);--purple:#4b3bc4;
+  --sans:'Pretendard Variable',Pretendard,'Noto Sans KR','Malgun Gothic','Apple SD Gothic Neo',sans-serif;
+  --mono:'JetBrains Mono','Noto Sans KR',monospace;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:#0c0c0f;overflow:hidden;font-family:var(--sans);-webkit-font-smoothing:antialiased}
+#stage{position:absolute;left:50%;top:50%;width:1920px;height:1080px;transform-origin:center center;background:var(--paper);overflow:hidden;color:var(--ink);word-break:keep-all;overflow-wrap:break-word}
+.bg{display:none}
+
+/* ---------- 슬라이드 ---------- */
+.slide{position:absolute;inset:0;z-index:1;padding:70px 120px 84px;display:flex;flex-direction:column;opacity:0;visibility:hidden;transition:opacity .4s,transform .4s,visibility 0s .4s}
+.slide.on{opacity:1;visibility:visible;transform:none;transition:opacity .4s,transform .4s,visibility 0s}
+.slide.before{transform:translateX(-70px)}
+.slide.after{transform:translateX(70px)}
+.a{opacity:0}
+.on .a{animation:rise .65s cubic-bezier(.2,.8,.2,1) both;animation-delay:calc(var(--d,0)*.12s + .1s)}
+.on .a.pop{animation-name:pop}
+.on .a.zoom{animation-name:zoom}
+.on .a.left{animation-name:fromleft}
+.on .a.right{animation-name:fromright}
+@keyframes rise{from{opacity:0;transform:translateY(34px)}to{opacity:1;transform:none}}
+@keyframes pop{0%{opacity:0;transform:scale(.7)}65%{opacity:1;transform:scale(1.05)}100%{opacity:1;transform:none}}
+@keyframes zoom{from{opacity:0;transform:scale(.9)}to{opacity:1;transform:none}}
+@keyframes fromleft{from{opacity:0;transform:translateX(-60px)}to{opacity:1;transform:none}}
+@keyframes fromright{from{opacity:0;transform:translateX(60px)}to{opacity:1;transform:none}}
+.f{opacity:0;transform:translateY(24px);transition:opacity .5s,transform .5s;pointer-events:none}
+.f.show{opacity:1;transform:none;pointer-events:auto}
+
+/* ---------- 글자 ---------- */
+h1,h2,h3{margin:0;font-family:var(--sans);font-weight:800;letter-spacing:-.035em}
+h2{font-size:80px;line-height:1.12;margin:20px 0 26px}
+h2.sm{font-size:66px;margin:16px 0 20px}
+h3{font-size:40px;line-height:1.25;letter-spacing:-.02em}
+h2 em,h1 em,.grad,.grad2{font-style:normal;color:var(--acc);background:none;-webkit-text-fill-color:currentColor}
+p{margin:0}
+.lead{font-size:38px;line-height:1.55}
+.md{font-size:32px;line-height:1.5}
+.dim{color:var(--dim)}
+.mono{font-family:var(--mono)}
+b{font-weight:800}
+b.g{color:var(--green)}b.y,b.p,b.r{color:var(--acc)}b.bl{color:var(--blue)}b.o{color:var(--amber)}
+code{font:500 .86em var(--mono);background:rgba(22,22,27,.09);padding:2px 9px;border-radius:3px;color:var(--ink)}
+.src{position:absolute;left:120px;bottom:30px;font-size:22px;color:var(--dim)}
+
+/* ---------- 상단 띠 ---------- */
+.hd{display:flex;align-items:baseline;gap:22px;flex-wrap:wrap;padding-bottom:14px;border-bottom:3px solid var(--ink)}
+.stepno{font:800 32px var(--sans);letter-spacing:.01em;color:var(--acc);background:none;padding:0;border-radius:0}
+.badge{font:700 24px var(--sans);padding:3px 14px;border:2px solid var(--ink);border-radius:0;letter-spacing:0;background:none}
+.badge.agent{background:var(--ink);color:var(--paper)}
+.badge.me{color:var(--ink)}
+.badge.both{border-color:var(--acc);color:var(--acc)}
+.chips{display:flex;gap:12px;flex-wrap:wrap}
+.chips span{font:500 26px var(--mono);padding:6px 16px;border:2px solid var(--ink);border-radius:0}
+
+/* ---------- 레이아웃 ---------- */
+.body{flex:1;display:flex;gap:48px;min-height:0;align-items:stretch}
+.col{display:flex;flex-direction:column;gap:22px;min-width:0}
+.row{display:flex;gap:28px;align-items:stretch}
+.g1{flex:1}.g15{flex:1.5}.g2{flex:2}
+.mid{justify-content:center}
+.ac{align-items:center}
+.card{background:var(--panel);border:1px solid var(--line);border-top:5px solid var(--ink);border-radius:0;padding:26px 32px}
+.card h3{margin-bottom:10px}
+ul.ls,ol.ls{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:18px;font-size:36px;line-height:1.45}
+ul.ls li,ol.ls li{padding-left:56px;position:relative}
+ul.ls li::before{content:'';position:absolute;left:6px;top:.62em;width:20px;height:20px;background:var(--acc)}
+ol.ls{counter-reset:n}
+ol.ls li::before{counter-increment:n;content:counter(n);position:absolute;left:0;top:.06em;width:42px;height:42px;background:var(--ink);color:var(--paper);font:800 26px/42px var(--sans);text-align:center}
+ul.ls.sm,ol.ls.sm{font-size:32px;gap:14px}
+
+.call{display:flex;gap:20px;align-items:flex-start;padding:20px 28px;border-radius:0;font-size:30px;line-height:1.5;border:0;border-left:8px solid var(--ink);background:var(--panel2)}
+.call .ic{font-size:38px;line-height:1.1;flex:none}
+.call.warn{border-left-color:var(--amber);background:#efe4cc}
+.call.tip{border-left-color:var(--ink);background:var(--panel2)}
+.call.bad{border-left-color:var(--acc);background:#f1d9d0}
+.call.ok{border-left-color:var(--green);background:#d8e8dd}
+.call b{color:var(--ink)}
+.goal{margin-top:20px;display:flex;align-items:center;gap:24px;padding:16px 28px;border-radius:0;font-size:32px;line-height:1.4;background:var(--ink);color:var(--paper)}
+.goal .dim{color:#bdbbb2}
+.goal b{color:var(--paper)!important}
+.goal code{background:rgba(255,255,255,.16);color:var(--paper)}
+.goal .lb{flex:none;font:800 26px var(--sans);background:var(--acc);color:var(--paper);padding:6px 18px;border-radius:0}
+
+/* ---------- 터미널 · 코드 ---------- */
+.term,.code{background:#17171c;border:0;border-radius:4px;overflow:hidden;display:flex;flex-direction:column;color:#e9e8e2}
+.tb{display:flex;align-items:center;gap:10px;padding:13px 20px;background:#0f0f13;font:500 22px var(--mono);color:#9a9890}
+.tb i{width:13px;height:13px;border-radius:50%;background:#55534d}
+.tb span{margin-left:12px}
+.term pre,.code pre{margin:0;padding:22px 28px;font:400 24px/1.55 var(--mono);white-space:pre-wrap;color:#ecebe5;flex:1}
+.t1::after{content:'▍';color:#ff7a4d;animation:blink 1s steps(2) infinite}
+.fin .t1::after{content:''}
+@keyframes blink{50%{opacity:0}}
+.kw{color:#c6aaff}.cm{color:#8b8a82}.st{color:#f2c96b}.fn{color:#7db4ff}.nu{color:#ff9f5a}.pr{color:#5fd7a1}.hl{background:rgba(201,61,20,.14);color:var(--acc);padding:0 6px;font-weight:800}
+.term .hl{background:rgba(255,122,77,.22);color:#ffb08f}
+.add{display:block;background:rgba(95,215,161,.18);margin:0 -28px;padding:0 28px;box-shadow:inset 6px 0 0 #5fd7a1}
+.cmt{display:block;color:#8b8a82}
+
+/* ---------- 표 ---------- */
+.tbl{border-collapse:collapse;width:100%;font-size:32px}
+.tbl th{font:800 24px var(--sans);color:var(--dim);text-align:left;padding:0 22px 8px;letter-spacing:.04em}
+.tbl td{background:transparent;padding:16px 22px;border-top:2px solid var(--ink)}
+.tbl tr:last-child td{border-bottom:2px solid var(--ink)}
+.tr3{display:grid;grid-template-columns:1.25fr 1fr 1.25fr;gap:22px;padding:14px 22px;border-radius:0;background:transparent;border:0;border-top:2px solid var(--ink);font-size:27px;line-height:1.4;align-items:center;margin-bottom:0}
+.tr3 .sy{color:var(--acc);font-weight:800}
+.tr3 .fx{color:var(--green);font-weight:700}
+.th3{display:grid;grid-template-columns:1.25fr 1fr 1.25fr;gap:22px;padding:0 22px 8px;font:800 24px var(--sans);color:var(--dim);letter-spacing:.04em}
+
+/* ---------- 브라우저 목업 ---------- */
+.browser{background:#f6f7ff;color:#1d2140;border:2px solid var(--ink);border-radius:8px;overflow:hidden;display:flex;flex-direction:column}
+.bb{display:flex;align-items:center;gap:9px;padding:11px 18px;background:#dfe2f5;border-bottom:2px solid var(--ink)}
+.bb i{width:13px;height:13px;border-radius:50%;background:#9a9db8;flex:none}
+.url{margin-left:10px;flex:1;background:#fff;border-radius:999px;padding:5px 18px;font:500 21px var(--mono);color:#7a80a8;white-space:nowrap;overflow:hidden}
+.pg{padding:22px 26px;flex:1;position:relative;overflow:hidden}
+.bt{font:800 38px var(--sans);letter-spacing:-.03em;color:#2b2f6b;margin-bottom:14px}
+.post{background:#fff;border-radius:10px;padding:14px 22px;margin-bottom:12px;box-shadow:0 2px 0 #e3e5f7}
+.post b{display:block;font-size:28px;line-height:1.3}
+.post small{display:block;color:#7a80a8;font-size:22px;margin-top:2px}
+.btn{display:inline-block;background:#4a5bff;color:#fff;padding:8px 22px;border-radius:8px;font-size:24px;font-weight:700}
+.inp{background:#fff;border:2px solid #cfd3ee;border-radius:8px;padding:8px 14px;font-size:24px;color:#1d2140;margin-bottom:10px;white-space:nowrap;overflow:hidden}
+.float{animation:fl 5s ease-in-out infinite alternate}
+@keyframes fl{from{transform:translateY(0)}to{transform:translateY(-14px)}}
+
+/* ---------- DB · 파이프 ---------- */
+svg.db{color:var(--ink)}
+.pipe{position:relative;height:4px;background:repeating-linear-gradient(90deg,var(--ink) 0 12px,transparent 12px 24px);flex:1;min-width:80px;opacity:.9}
+.pipe i{position:absolute;top:-10px;left:0;width:24px;height:24px;border-radius:50%;background:var(--acc);animation:flow 2.1s linear infinite;animation-delay:var(--t,0s);opacity:0}
+.pipe i:nth-child(even){background:var(--ink);animation-direction:reverse}
+@keyframes flow{0%{left:0;opacity:0}10%{opacity:1}90%{opacity:1}100%{left:calc(100% - 24px);opacity:0}}
+.sheet{border-collapse:separate;border-spacing:0;font-size:25px;background:#fff;color:#1d2140;border:2px solid var(--ink)}
+.sheet th{background:var(--ink);color:var(--paper);padding:12px 18px;text-align:left;font-weight:700;font-family:var(--mono)}
+.sheet td{padding:12px 18px;border-top:1px solid #d8d6cf;white-space:nowrap}
+.sheet td.mono{font-family:var(--mono)}
+
+/* ---------- 구간 표지 ---------- */
+.slide.divider{background:var(--ink);color:var(--paper);justify-content:center;align-items:flex-start}
+.dv-big{font:800 340px/1 var(--sans);color:var(--acc);letter-spacing:-.06em}
+.divider h2{font-size:96px;color:var(--paper)}
+.divider h2 em{color:var(--acc)}
+.divider .dim{color:#a9a79f}
+.orb{display:none}
+
+/* ---------- 로드맵 ---------- */
+.rd{display:flex;flex-direction:column;gap:18px}
+.rdh{font:800 44px var(--sans);letter-spacing:-.03em;display:flex;align-items:center;gap:20px}
+.day{font:800 34px var(--sans);padding:2px 20px;border-radius:0;color:var(--paper);background:var(--ink)}
+.day.d2{background:var(--acc)}
+.road{position:relative;display:grid;grid-template-columns:repeat(4,1fr);margin-bottom:14px}
+.road::before,.road::after{content:'';position:absolute;left:12.5%;right:12.5%;top:46px;height:6px;background:rgba(22,22,27,.2)}
+.road::after{background:var(--ink);transform-origin:left;transform:scaleX(0)}
+.road.p::after{background:var(--acc)}
+.on .road::after{animation:grow 1.6s .5s ease-out both}
+@keyframes grow{to{transform:scaleX(1)}}
+.node{display:flex;flex-direction:column;align-items:center;text-align:center;gap:10px;position:relative;z-index:1}
+.node .dot{width:96px;height:96px;border-radius:0;background:var(--paper);border:5px solid var(--ink);display:grid;place-items:center;font:800 46px var(--sans)}
+.road.p .dot{border-color:var(--acc);color:var(--acc)}
+.node b{font-size:32px}
+.node small{font-size:25px;color:var(--dim)}
+
+/* ---------- 카드 · 용어 ---------- */
+.cards5{display:grid;grid-template-columns:repeat(5,1fr);gap:0;flex:none;border-top:5px solid var(--ink)}
+.tc{background:transparent;border:0;border-right:1px solid var(--line);border-radius:0;padding:30px 22px;display:flex;flex-direction:column;gap:14px;align-items:flex-start;text-align:left}
+.tc:last-child{border-right:0}
+.tc .em{font-size:70px;line-height:1}
+.tc h3{font-size:54px}
+.tc p{font-size:32px;line-height:1.5;color:var(--dim)}
+.tc p b{color:var(--ink)}
+.pulse{animation:pulse 2.4s ease-in-out infinite}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
+.shake{animation:shake 3s ease-in-out infinite}
+@keyframes shake{0%,70%,100%{transform:translateX(0)}74%{transform:translateX(-10px) rotate(-3deg)}78%{transform:translateX(10px) rotate(3deg)}82%{transform:translateX(-8px)}86%{transform:translateX(8px)}90%{transform:translateX(-4px)}}
+
+/* ---------- 체크리스트 · 토글 ---------- */
+.chk{display:flex;align-items:center;gap:22px;padding:15px 24px;border-radius:0;background:var(--panel);border:2px solid var(--ink);font-size:33px;cursor:pointer;transition:.25s;user-select:none}
+.chk .bx{width:42px;height:42px;border-radius:0;border:3px solid var(--ink);display:grid;place-items:center;font-size:28px;color:transparent;transition:.2s;flex:none}
+.chk.is-done{background:#d8e8dd;border-color:var(--green)}
+.chk.is-done .bx{background:var(--green);border-color:var(--green);color:var(--paper)}
+.chk small{margin-left:auto;font:500 24px var(--mono);color:var(--dim)}
+.tp{padding:18px 24px;border-radius:0;background:var(--panel);border:2px solid var(--ink);font-size:32px;font-weight:700;cursor:pointer;display:flex;gap:16px;align-items:center;transition:.2s;user-select:none}
+.tp:hover{transform:translateY(-3px)}
+.tp.sel{background:var(--acc);color:var(--paper);border-color:var(--acc)}
+.tp span{font-size:42px}
+.sw{display:flex;align-items:center;gap:20px;padding:16px 24px;border-radius:0;background:var(--panel);border:2px solid var(--ink);cursor:pointer;font:700 30px var(--sans);color:var(--ink);text-align:left;width:100%}
+.sw .knob{width:84px;height:44px;border-radius:22px;background:#8d8b84;position:relative;flex:none;transition:.3s}
+.sw .knob::after{content:'';position:absolute;left:5px;top:5px;width:34px;height:34px;border-radius:50%;background:#fff;transition:.3s}
+.sw.is-on .knob{background:var(--green)}
+.sw.is-on .knob::after{left:45px}
+.sw small{display:block;font:500 22px var(--mono);color:var(--dim);margin-top:2px}
+.gates{display:flex;align-items:center;gap:0}
+.person{font-size:86px;flex:none}
+.gate{flex:none;width:210px;height:210px;border-radius:0;border:5px solid;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;transition:.35s;text-align:center;font-size:26px;font-weight:800}
+.gate .gi{font-size:66px;line-height:1}
+.gate.closed{border-color:var(--acc);background:#f1d9d0}
+.gate.open{border-color:var(--green);background:#d8e8dd}
+.res{border-radius:0;padding:22px 30px;font-size:30px;line-height:1.45;border:0;border-left:10px solid;animation:zoom .45s both}
+.res b{display:block;font:700 32px var(--mono);margin-bottom:4px}
+.res.bad{background:#f1d9d0;border-color:var(--acc)}
+.res.warn{background:#efe4cc;border-color:var(--amber)}
+.res.ok{background:#d8e8dd;border-color:var(--green)}
+
+/* ---------- 파이프라인 · 단계 ---------- */
+.pl{display:flex;align-items:center;gap:0}
+.stg{flex:1;background:var(--panel);border:3px solid var(--ink);border-radius:0;padding:24px 14px;text-align:center;font-size:29px;font-weight:700;position:relative;min-height:200px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;line-height:1.35}
+.stg .ic{font-size:50px;line-height:1}
+.stg small{font-size:23px;color:var(--dim);font-weight:400}
+.stg .tick{position:absolute;top:-20px;right:-16px;width:46px;height:46px;border-radius:0;background:var(--green);color:var(--paper);font:800 28px/46px var(--sans);text-align:center;transform:scale(0)}
+.pl .arr{flex:none;width:44px;text-align:center;font-size:40px;color:var(--ink)}
+.on .stg{animation:stg 1s both;animation-delay:calc(var(--k)*1.5s + .8s)}
+.on .stg .tick{animation:tick .5s both;animation-delay:calc(var(--k)*1.5s + 1.6s)}
+@keyframes stg{0%{border-color:var(--ink);background:var(--panel)}30%{border-color:var(--acc);background:#f1d9d0}100%{border-color:var(--green);background:#d8e8dd}}
+@keyframes tick{from{transform:scale(0)}to{transform:scale(1)}}
+.on .stg.a.pop{animation-name:pop;animation-duration:.7s;animation-delay:calc(var(--d,0)*.12s + .12s)}
+.stp{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+.sc{background:var(--panel);border:1px solid var(--line);border-top:5px solid var(--ink);border-radius:0;padding:22px 28px;font-size:30px;line-height:1.4;position:relative;display:flex;flex-direction:column;gap:8px}
+.sc .no{font:800 30px var(--sans);color:var(--paper);background:var(--ink);align-self:flex-start;padding:2px 16px;border-radius:0}
+.sc b{font-size:34px}
+.sc small{font-size:25px;color:var(--dim)}
+.sc.new{border-top-color:var(--acc);background:#f1d9d0}
+.sc.new .no{background:var(--acc)}
+.map{display:grid;grid-template-columns:repeat(13,1fr);gap:8px}
+.mt{border-radius:0;padding:14px 0;text-align:center;font:800 40px var(--sans);border:3px solid var(--ink);display:flex;flex-direction:column;gap:2px;background:transparent}
+.mt small{font:500 22px var(--sans)}
+.mt.ag{background:var(--ink);color:var(--paper)}
+.mt.me{background:transparent}
+.mt.bo{background:var(--acc);border-color:var(--acc);color:var(--paper)}
+
+/* ---------- 오버레이 UI ---------- */
+#prog{position:fixed;left:0;top:0;height:6px;background:var(--acc);width:0;transition:width .4s;z-index:60}
+#ctr{position:fixed;right:18px;bottom:10px;font:500 18px var(--mono);color:#8c8a82;z-index:60}
+#nav{position:fixed;left:50%;bottom:10px;transform:translateX(-50%);display:flex;gap:10px;opacity:0;transition:.3s;z-index:60}
+body:hover #nav{opacity:.85}
+#nav button,#mbtn{width:44px;height:44px;border-radius:50%;border:2px solid #16161b;background:#f2efe8;color:#16161b;font-size:20px;cursor:pointer}
+#mbtn{position:fixed;right:16px;top:16px;z-index:61;opacity:.3}
+#mbtn:hover{opacity:1}
+#menu{position:fixed;right:0;top:0;bottom:0;width:440px;background:#16161b;transform:translateX(100%);transition:.3s;overflow:auto;z-index:70;padding:20px 18px 40px;font:500 18px var(--sans);color:#d7d5cd}
+#menu.open{transform:none}
+#menu h4{margin:18px 8px 6px;font:700 16px var(--sans);color:#8f8d85;letter-spacing:.08em}
+#menu a{display:flex;gap:12px;padding:8px 12px;cursor:pointer;color:#d7d5cd;text-decoration:none}
+#menu a:hover{background:#26262d}
+#menu a.cur{background:#c93d14;color:#fff}
+#menu a span{color:#8f8d85;font-family:var(--mono);width:30px;flex:none}
+#menu a.cur span{color:#fff}
+#hint{position:fixed;left:50%;top:22px;transform:translateX(-50%);background:#16161b;color:#f2efe8;padding:10px 22px;font:500 18px var(--sans);z-index:80;transition:opacity .6s}
+#cf{position:absolute;left:0;top:0;width:1920px;height:1080px;pointer-events:none;z-index:5}
+
+/* ---------- 슬라이드별 ---------- */
+.cover{flex-direction:row;align-items:center;gap:50px}
+.cv-l{flex:1.2;display:flex;flex-direction:column;gap:26px}
+.cv-l h1{font-size:126px;line-height:1.08;letter-spacing:-.05em}
+.cv-r{flex:1;display:flex;align-items:center}
+.swap{position:relative;display:inline-block}
+.swap b{font-weight:800}
+.swap .s1{color:var(--acc);animation:sw1 6s infinite}
+.swap .s2{position:absolute;left:0;top:0;white-space:nowrap;color:#ffb08f;animation:sw2 6s infinite;opacity:0}
+@keyframes sw1{0%,38%{opacity:1}45%,92%{opacity:0}100%{opacity:1}}
+@keyframes sw2{0%,38%{opacity:0}45%,92%{opacity:1}100%{opacity:0}}
+.wipe{position:absolute;inset:0;background:#fff;animation:wipe 6s ease-in-out infinite}
+@keyframes wipe{0%,10%{clip-path:inset(0 100% 0 0)}45%,80%{clip-path:inset(0 0 0 0)}100%{clip-path:inset(0 100% 0 0)}}
+.view{position:absolute;inset:0;padding:22px 26px;background:#f6f7ff}
+.v-list{animation:vlist 8s infinite}
+.v-det{animation:vdet 8s infinite}
+@keyframes vlist{0%,40%{opacity:1}46%,90%{opacity:0}96%,100%{opacity:1}}
+@keyframes vdet{0%,40%{opacity:0}46%,90%{opacity:1}96%,100%{opacity:0}}
+.finger{position:absolute;font-size:56px;animation:fing 8s infinite;z-index:3;left:75%;top:85%;opacity:0}
+@keyframes fing{0%{left:75%;top:85%;opacity:0;transform:scale(1)}12%{left:52%;top:44%;opacity:1}30%{left:52%;top:44%;transform:scale(1)}34%{transform:scale(.8)}38%{transform:scale(1)}44%{left:52%;top:44%;opacity:0}52%{left:30%;top:12%;opacity:0}60%{left:30%;top:12%;opacity:1;transform:scale(1)}80%{left:30%;top:12%;transform:scale(1)}84%{transform:scale(.8)}88%{transform:scale(1)}94%{opacity:0}100%{left:75%;top:85%;opacity:0}}
+.sync{position:relative}
+.sync .nr{animation:nrow 9s infinite}
+.sync .nc{animation:ncard 9s infinite}
+@keyframes nrow{0%,10%{opacity:0;transform:translateY(-24px)}20%,92%{opacity:1;transform:none}100%{opacity:0}}
+@keyframes ncard{0%,50%{opacity:0;transform:translateY(-30px)}62%,92%{opacity:1;transform:none}100%{opacity:0}}
+.sync .nr td{background:#d9fbe9}
+.arrowx{font-size:90px;color:var(--acc);animation:arr 9s infinite}
+@keyframes arr{0%,32%{opacity:.2;transform:scale(1)}40%{opacity:1;transform:scale(1.25)}52%,100%{opacity:.2;transform:scale(1)}}
+.typew{display:inline-block;overflow:hidden;white-space:nowrap;vertical-align:bottom;max-width:0;animation:typew 9s steps(14) infinite}
+@keyframes typew{0%,5%{max-width:0}30%,90%{max-width:420px}100%{max-width:0}}
+.on .tickrow{animation:rise .6s both;animation-delay:calc(var(--d)*.5s + .6s)}
+.tickrow{opacity:0}
+.hole{animation:hole 4s ease-in-out infinite alternate}
+@keyframes hole{from{transform:rotate(-8deg)}to{transform:rotate(6deg)}}
+.loading{height:14px;background:var(--panel2);overflow:hidden;border:2px solid var(--ink)}
+.loading i{display:block;height:100%;width:0;background:var(--acc);animation:load 12s ease-in-out infinite}
+@keyframes load{0%{width:4%}80%{width:92%}100%{width:100%}}
+.cy{animation:cyc 9s infinite;position:absolute;left:0;right:0;text-align:center;opacity:0}
+.cy:nth-child(2){animation-delay:3s}.cy:nth-child(3){animation-delay:6s}
+@keyframes cyc{0%{opacity:0;transform:translateY(16px)}6%,30%{opacity:1;transform:none}36%,100%{opacity:0}}
+.sav{font-size:230px;line-height:1;animation:pulse 2s ease-in-out infinite}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><symbol id="db" viewBox="0 0 120 140"><ellipse cx="60" cy="26" rx="50" ry="20" fill="currentColor"/><path d="M10 26v88c0 11 22 20 50 20s50-9 50-20V26c0 11-22 20-50 20S10 37 10 26z" fill="currentColor" opacity=".85"/><path d="M10 62c0 11 22 20 50 20s50-9 50-20M10 98c0 11 22 20 50 20s50-9 50-20" stroke="#f2efe8" stroke-width="5" fill="none" opacity=".55"/></symbol></svg>
+<div id="stage">
+<div class="bg"></div>
+<section class="slide cover" data-sec="시작" data-title="표지">
+  <div class="cv-l">
+    <div class="a" style="--d:0"><span class="badge me">바이브코딩 · 블로그 2일차 · 3시간</span></div>
+    <h1 class="a" style="--d:1"><span class="grad">블로그</span>를<br>세상에 올려보자</h1>
+    <p class="a lead dim" style="--d:2">글쓰기 · 보안 점검 · 배포<br>GitHub Pages에 올려 서로의 블로그에 글을 남김</p>
+    <div class="a chips" style="--d:3"><span>Supabase</span><span>GitHub Actions</span><span>GitHub Pages</span></div>
+  </div>
+  <div class="cv-r a zoom" style="--d:3">
+    <div class="browser float" style="width:470px;height:470px">
+      <div class="bb"><i></i><i></i><i></i><div class="url">my-blog</div></div>
+      <div class="pg">
+        <div class="bt">📝 나의 블로그</div>
+        <div class="post"><b>첫 번째 글</b><small>운영자 · 방금 전</small></div>
+        <div class="post"><b>두 번째 글</b><small>운영자 · 1분 전</small></div>
+        <div class="post"><b>내가 쓴 글</b><small>나 · 오늘</small></div>
+      </div>
+    </div>
+    <div class="pipe"><i style="--t:0s"></i><i style="--t:.5s"></i><i style="--t:1s"></i><i style="--t:1.5s"></i></div>
+    <svg class="db pulse" viewBox="0 0 120 140" width="150" height="175"><use href="#db"/></svg>
+  </div>
+</section>
+<section class="slide" data-sec="2일차" data-title="1일차에서 이어받은 것">
+  <div class="hd a"><span class="badge me">시작 전 확인</span></div>
+  <h2 class="a" style="--d:1">1일차에서 <em>이어받은 것</em> <span class="dim" style="font-size:34px">(눌러서 체크)</span></h2>
+  <div class="body" style="gap:44px">
+    <div class="col g15" style="gap:12px">
+      <div class="chk a" style="--d:2"><span class="bx">✓</span>개발 서버가 켜져 있음<small>npm run dev</small></div>
+      <div class="chk a" style="--d:3"><span class="bx">✓</span>DB 글이 화면에 나옴<small>새로고침</small></div>
+      <div class="chk a" style="--d:4"><span class="bx">✓</span>체크포인트 2 커밋이 있음<small>git log</small></div>
+      <div class="chk a" style="--d:5"><span class="bx">✓</span>깃허브 · Supabase 로그인<small>브라우저</small></div>
+      <p class="md dim a" style="--d:6;margin-top:10px">하나라도 안 되면 1일차 문서의 해당 STEP으로 돌아감</p>
+    </div>
+    <div class="col g1" style="gap:16px">
+      <div class="card a right" style="--d:3"><h3>🔑 키는 두 종류</h3><p class="md dim" style="font-size:28px">publishable key만 씀. <code>sb_secret_</code> 는 어디에도 넣지 않음</p></div>
+      <div class="card a right" style="--d:4"><h3>🛡️ 권한은 두 겹</h3><p class="md dim" style="font-size:28px"><code>grant</code> + 정책. 한쪽이 빠지면 오류 또는 빈 목록</p></div>
+      <div class="card a right" style="--d:5"><h3>♻️ 환경 변수</h3><p class="md dim" style="font-size:28px"><code>.env.local</code> 을 고치면 서버를 다시 켬</p></div>
+    </div>
+  </div>
+</section>
+<section class="slide" data-sec="2일차" data-title="2일차 지도">
+  <div class="hd a"><span class="badge me">2일차 지도</span></div>
+  <h2 class="a" style="--d:1">오늘은 <em>이렇게</em> 감</h2>
+  <div class="rd">
+    <div class="rdh a" style="--d:2"><span class="day d2">2일차</span> 쓰기 · 보안 · 배포</div>
+    <div class="road p">
+      <div class="node a pop" style="--d:3"><div class="dot">1</div><b>글쓰기 기능</b><small>STEP 14~16</small></div>
+      <div class="node a pop" style="--d:5"><div class="dot">2</div><b>보안 점검</b><small>STEP 17</small></div>
+      <div class="node a pop" style="--d:7"><div class="dot">3</div><b>세상에 배포</b><small>STEP 18</small></div>
+      <div class="node a pop" style="--d:9"><div class="dot">4</div><b>서로 글 남기기</b><small>STEP 19</small></div>
+    </div>
+  </div>
+  <div class="call tip a" style="--d:11;margin-top:auto"><span class="ic">🎯</span><div>2일차 목표 : <b>내 블로그가 인터넷 주소로 열리고, 친구가 남긴 글이 쌓임</b></div></div>
+</section>
+<section class="slide" data-sec="2일차" data-title="STEP 14 지난 상태 불러오기">
+  <div class="hd a"><span class="stepno">STEP 14</span><span class="badge agent">💬 에이전트에게</span></div>
+  <h2 class="a" style="--d:1">지난 상태 <em>불러오기</em></h2>
+  <div class="body">
+    <div class="col g1" style="gap:20px;justify-content:center">
+      <div class="card a left" style="--d:2;text-align:center"><div style="font-size:76px">🧠</div><p class="md">새 세션의 에이전트는 <b class="y">어제 대화를 모름</b><br><span class="dim" style="font-size:27px">파일(<code>CLAUDE.md</code>, docs)과 git 기록으로 파악시킴</span></p></div>
+    </div>
+    <div class="col g15" style="gap:20px">
+      <div class="term a right" style="--d:3"><div class="tb"><i></i><i></i><i></i><span>claude</span></div><pre class="type">CLAUDE.md 와 docs/요구사항.md 를 읽고
+이 프로젝트가 지금 어디까지 만들어졌는지
+5줄 이내로 요약해줘.
+git log 로 최근 커밋 3개도 알려줘.
+코드는 아직 바꾸지 말 것.</pre></div>
+      <div class="call warn a" style="--d:5"><span class="ic">⏪</span><div>지난 상태가 망가졌다면 <b>부록 B의 되돌리기 프롬프트</b>로 체크포인트 2로 돌아옴</div></div>
+    </div>
+  </div>
+</section>
+<section class="slide" data-sec="2일차" data-title="STEP 15 글쓰기 권한 열기">
+  <div class="hd a"><span class="stepno">STEP 15</span><span class="badge me">🖱 내가 직접</span><span class="badge both">SQL Editor</span></div>
+  <h2 class="a" style="--d:1">글쓰기 <em>권한</em> 열기</h2>
+  <div class="body">
+    <div class="col g15" style="gap:18px">
+      <p class="md a" style="--d:2">지금 DB는 <b>읽기만</b> 허용됨. 저장하려면 쓰기 권한과 규칙을 추가함</p>
+      <div class="code a left" style="--d:3"><div class="tb"><i></i><i></i><i></i><span>SQL Editor → Run</span></div><pre style="font-size:22px;line-height:1.5"><span class="cm">-- 방문자(anon)가 글을 추가할 수 있게 허용</span>
+<span class="kw">grant insert on</span> public.posts <span class="kw">to</span> anon;
+
+<span class="cm">-- 누구나 쓰되, 길이는 제한함</span>
+<span class="kw">create policy</span> <span class="st">"public can insert posts"</span>
+<span class="kw">on</span> public.posts
+<span class="kw">for insert to</span> anon
+<span class="kw">with check</span> (
+  char_length(title) <span class="kw">between</span> <span class="nu">1</span> <span class="kw">and</span> <span class="nu">100</span>
+  <span class="kw">and</span> char_length(content) <span class="kw">between</span> <span class="nu">1</span> <span class="kw">and</span> <span class="nu">5000</span>
+  <span class="kw">and</span> char_length(author) <span class="kw">between</span> <span class="nu">1</span> <span class="kw">and</span> <span class="nu">30</span>
+);</pre></div>
+    </div>
+    <div class="col g1 a right" style="--d:4;gap:16px;justify-content:center">
+      <div class="call warn" style="font-size:28px"><span class="ic hole">🚪</span><div><b>지금 설정은 "누구나 글을 쓸 수 있음"</b><br>수업용으로 단순하게 열어둔 것. 주소를 아는 사람은 누구나 쓸 수 있음</div></div>
+      <div class="call tip" style="font-size:26px"><span class="ic">🔐</span><div>실제 서비스는 <b>로그인한 사람만</b> 쓰게 해야 함. 로그인(인증)은 이 수업 범위 밖임</div></div>
+      <div class="call tip" style="font-size:26px"><span class="ic">📏</span><div>길이 제한(<code>with check</code>)은 최소한의 방어일 뿐임</div></div>
+    </div>
+  </div>
+</section>
+<section class="slide" data-sec="2일차" data-title="STEP 16 글쓰기 폼">
+  <div class="hd a"><span class="stepno">STEP 16</span><span class="badge agent">💬 에이전트에게</span></div>
+  <h2 class="a" style="--d:1">글쓰기 <em>폼</em></h2>
+  <div class="body">
+    <div class="term g15 a left" style="--d:2"><div class="tb"><i></i><i></i><i></i><span>claude</span></div><pre class="type" style="font-size:23px">글쓰기 화면을 만들어줘.
+
+- 파일은 src/components/PostForm.tsx 하나만
+- 입력칸 : 제목(100자) 닉네임(30자) 내용(5000자)
+- 빈 칸이 있으면 저장하지 말고 알려줄 것
+- supabase.from('posts')
+    .insert({ title, content, author })
+- 저장 중엔 버튼 막기. 성공하면 입력칸을
+  비우고 목록 새로 불러오기. 실패하면 오류 표시
+- "글쓰기" 버튼 → 폼 표시. 라우터 설치 금지
+- CSS 는 App.css 에만 추가</pre></div>
+    <div class="browser g1 a right sync" style="--d:3">
+      <div class="bb"><i></i><i></i><i></i><div class="url">localhost:5173</div></div>
+      <div class="pg">
+        <div class="inp"><span class="typew">오늘의 첫 글</span></div>
+        <div class="inp">나</div>
+        <span class="btn" style="margin-bottom:14px">저장</span>
+        <div class="post nc" style="background:#d9fbe9"><b style="font-size:24px">오늘의 첫 글 ✨</b><small>나 · 방금 전</small></div>
+        <div class="post"><b style="font-size:24px">두 번째 글</b></div>
+      </div>
+    </div>
+  </div>
+  <div class="goal a" style="--d:6"><span class="lb">여기까지 하면</span>폼에서 쓴 글이 목록 맨 위에 나타나고, Table Editor의 <code>posts</code> 에도 행이 생김</div>
+</section>
+<section class="slide" data-sec="2일차" data-title="STEP 16 안 되면 · 체크포인트 3">
+  <div class="hd a"><span class="stepno">STEP 16</span><span class="badge me">안 되면 의심할 것</span><span class="dim" style="font-size:26px">→ 키로 하나씩</span></div>
+  <h2 class="a sm" style="--d:1">쓰기가 안 될 때 · <em>체크포인트 3</em></h2>
+  <div class="th3 a" style="--d:2"><span>증상</span><span>원인</span><span>해결</span></div>
+  <div class="tr3 f"><span class="sy"><code>new row violates row-level security policy</code></span><span>쓰기 정책이 없거나 길이 규칙에 걸림</span><span class="fx">STEP 15 SQL 다시 실행 · 글자 수 확인</span></div>
+  <div class="tr3 f"><span class="sy"><code>permission denied for table posts</code></span><span><code>grant insert</code> 누락</span><span class="fx">STEP 15의 <code>grant</code> 줄만 다시 실행</span></div>
+  <div class="tr3 f"><span class="sy">저장은 됐다는데 목록에 안 나옴</span><span>저장 후 목록을 다시 안 불러옴</span><span class="fx">"저장에 성공하면 목록을 다시 불러오게 해줘"</span></div>
+  <div class="term a" style="--d:3;margin-top:14px"><div class="tb"><i></i><i></i><i></i><span>💾 체크포인트 3</span></div><pre class="type" style="font-size:23px">지금 상태를 git 으로 커밋해줘. 메시지는 "글쓰기 기능 추가".
+커밋하기 전에 .env.local 이 커밋 목록에 들어 있지 않은지 확인해서 알려줘.</pre></div>
+</section>
+<section class="slide" data-sec="2일차" data-title="STEP 17 배포 전 보안 점검">
+  <div class="hd a"><span class="stepno">STEP 17</span><span class="badge agent">💬 에이전트에게</span></div>
+  <h2 class="a" style="--d:1">배포 전 <em>보안 점검</em></h2>
+  <div class="body">
+    <div class="col g1" style="gap:12px;justify-content:center">
+      <p class="md a" style="--d:2">깃허브에 올리면 <b class="y">코드가 공개</b>됨. 올리기 <b>전에</b> 점검함</p>
+      <div class="chk is-done tickrow" style="--d:1;font-size:27px;cursor:default"><span class="bx">✓</span>.env 파일이 git 추적 대상 아님</div>
+      <div class="chk is-done tickrow" style="--d:2;font-size:27px;cursor:default"><span class="bx">✓</span>소스에 sb_secret_ · service_role 없음</div>
+      <div class="chk is-done tickrow" style="--d:3;font-size:27px;cursor:default"><span class="bx">✓</span>URL · 키 값이 코드에 직접 없음</div>
+      <div class="chk is-done tickrow" style="--d:4;font-size:27px;cursor:default"><span class="bx">✓</span>.gitignore 에 .env.local 있음</div>
+    </div>
+    <div class="col g15" style="gap:16px">
+      <div class="term a right" style="--d:3"><div class="tb"><i></i><i></i><i></i><span>claude · 점검만 함</span></div><pre class="type" style="font-size:22px">지금부터 점검만 하고, 파일은 절대 수정하지 마.
+
+1. .env 로 시작하는 파일이 git 추적 대상인지
+2. src·설정 파일에 sb_secret_ 또는
+   service_role 문자열이 있는지
+3. 소스에 URL·키 값이 직접 적혀 있는지
+4. .gitignore 에 .env.local 이 있는지
+
+결과를 표로, 문제 항목만 따로 알려줘.</pre></div>
+    </div>
+  </div>
+  <div class="call bad a" style="--d:6;margin-top:16px;font-size:27px"><span class="ic">🚨</span><div>비밀 키가 이미 올라갔다면 <b>파일에서 지우는 것만으로는 안전해지지 않음.</b> 그 키는 즉시 폐기하고 새로 발급받음 (Supabase 대시보드의 API Keys). 하나라도 문제면 <b>배포하지 않음</b></div></div>
+</section>
+<section class="slide" data-sec="2일차" data-title="STEP 18 배포 개요">
+  <div class="hd a"><span class="stepno">STEP 18</span><span class="badge me">🖱 내가 직접</span></div>
+  <h2 class="a" style="--d:1">깃허브에 올리고 <em>배포</em>하기</h2>
+  <div class="stp">
+    <div class="sc a pop" style="--d:2"><span class="no">18-1</span><b>저장소 만들고 올리기</b><small>Public · 이름 my-blog</small></div>
+    <div class="sc a pop" style="--d:3"><span class="no">18-2</span><b>base 설정</b><small>빼먹으면 화면이 하얗게 나옴</small></div>
+    <div class="sc a pop" style="--d:4"><span class="no">18-3</span><b>깃허브 페이지 켜기</b><small>Source → GitHub Actions</small></div>
+    <div class="sc new a pop" style="--d:5"><span class="no">18-4</span><b>접속 정보 등록 (Secrets)</b><small>포트폴리오 때와 다른 단계</small></div>
+    <div class="sc a pop" style="--d:6"><span class="no">18-5</span><b>배포 설정 파일 추가</b><small>deploy.yml</small></div>
+    <div class="sc a pop" style="--d:7"><span class="no">18-6</span><b>푸시하고 기다리기</b><small>Actions 탭에서 초록 체크</small></div>
+  </div>
+  <div class="call tip a" style="--d:9;margin-top:auto"><span class="ic">🧭</span><div>배포는 <b>에이전트에게 통째로 시키지 않음.</b> 깃허브 설정 화면은 에이전트가 못 건드리고, 설정 파일도 옛 방식으로 쓰는 경우가 있음. 순서대로 직접 하고, 막히는 부분만 물어봄</div></div>
+</section>
+<section class="slide" data-sec="2일차" data-title="18-1 저장소 만들고 올리기">
+  <div class="hd a"><span class="stepno">18-1</span><span class="badge me">🖱 내가 직접</span></div>
+  <h2 class="a" style="--d:1">저장소 만들고 <em>올리기</em></h2>
+  <div class="body">
+    <div class="col g1" style="gap:20px;justify-content:center">
+      <div class="card a left" style="--d:2"><h3>1. 깃허브에서 새 저장소</h3><p class="md dim" style="margin-top:8px">공개 범위 <b class="y">Public</b><br>이름 <code>my-blog</code></p></div>
+      <div class="card a left" style="--d:3"><h3>2. 내 컴퓨터에서 올리기</h3><p class="md dim" style="margin-top:8px">아래 3줄을 터미널에 입력</p></div>
+    </div>
+    <div class="term g15 a right" style="--d:3"><div class="tb"><i></i><i></i><i></i><span>터미널</span></div><pre class="type" style="font-size:25px">git branch -M main
+git remote add origin https://github.com/내아이디/my-blog.git
+git push -u origin main</pre></div>
+  </div>
+</section>
+<section class="slide" data-sec="2일차" data-title="18-2 base 설정">
+  <div class="hd a"><span class="stepno">18-2</span><span class="badge agent">💬 에이전트에게</span></div>
+  <h2 class="a" style="--d:1"><em>base</em> 설정 · 빼먹으면 하얀 화면</h2>
+  <div class="body">
+    <div class="col g1" style="gap:20px">
+      <div class="term a left" style="--d:2"><div class="tb"><i></i><i></i><i></i><span>claude</span></div><pre class="type" style="font-size:24px">vite.config.ts 에 base: '/my-blog/'
+한 줄만 추가해줘.
+다른 곳은 건드리지 마.</pre></div>
+      <div class="card a left" style="--d:3;padding:22px 28px"><p class="md dim" style="font-size:26px">배포 주소</p><p class="mono" style="font-size:28px;margin-top:6px;word-break:break-all">https://내아이디.github.io<b class="y">/my-blog/</b></p><p class="md" style="margin-top:8px;font-size:27px">↑ 이 부분과 <code>base</code> 가 같아야 함<br><b>앞뒤 슬래시가 둘 다</b> 필요함</p></div>
+    </div>
+    <div class="col g1 a right" style="--d:4;gap:18px">
+      <div class="browser" style="height:210px"><div class="bb"><i></i><i></i><i></i><div class="url">base 없음</div></div><div class="pg" style="display:grid;place-items:center;background:#fff;font-size:32px;color:#999">😶 (하얀 화면)</div></div>
+      <div class="browser" style="height:210px"><div class="bb"><i></i><i></i><i></i><div class="url">base: '/my-blog/'</div></div><div class="pg"><div class="bt" style="font-size:32px">📝 나의 블로그</div><div class="post" style="padding:8px 18px"><b style="font-size:24px">첫 번째 글</b></div></div></div>
+      <div class="call warn" style="font-size:26px"><span class="ic">👀</span><div>에이전트가 쓴 뒤 <b>직접 눈으로 확인</b>할 것</div></div>
+    </div>
+  </div>
+</section>
+<section class="slide" data-sec="2일차" data-title="18-3 깃허브 페이지 켜기">
+  <div class="hd a"><span class="stepno">18-3</span><span class="badge me">🖱 내가 직접</span></div>
+  <h2 class="a" style="--d:1">깃허브 <em>페이지</em> 켜기</h2>
+  <div class="body ac">
+    <div class="col g1" style="gap:20px">
+      <ol class="ls a" style="--d:2"><li>저장소 <b>Settings</b></li><li>왼쪽 <b>Pages</b></li><li><b>Build and deployment</b> 의 <b>Source</b></li><li><b class="g">GitHub Actions</b> 로 바꿈</li></ol>
+    </div>
+    <div class="card g1 a right" style="--d:3;background:#f6f7ff;color:#1d2140;border-color:#cfd3ee">
+      <p style="font-size:24px;color:#7a80a8;margin-bottom:10px">Settings › Pages</p>
+      <p style="font-size:30px;font-weight:700;margin-bottom:14px">Build and deployment</p>
+      <p style="font-size:26px;margin-bottom:8px">Source</p>
+      <div style="background:#fff;border:3px solid #4a5bff;border-radius:12px;padding:12px 18px;font-size:28px;font-weight:700;display:flex;justify-content:space-between">GitHub Actions <span>▾</span></div>
+      <p style="font-size:22px;color:#7a80a8;margin-top:12px">※ 화면 모양은 예시임. 실제 화면과 다를 수 있음</p>
+    </div>
+  </div>
+  <div class="call warn a" style="--d:5;margin-top:20px;font-size:27px"><span class="ic">⚠️</span><div>Source가 GitHub Actions가 아니면 배포 주소가 <b>404</b> 로 나옴</div></div>
+</section>
+<section class="slide" data-sec="2일차" data-title="18-4 접속 정보 등록 (Secrets)">
+  <div class="hd a"><span class="stepno" >18-4</span><span class="badge me">🖱 내가 직접</span><span class="badge both">포트폴리오 때와 다름</span></div>
+  <h2 class="a sm" style="--d:1">깃허브에도 <em class="grad2">같은 값</em>을 등록해야 함</h2>
+  <div class="body" style="gap:30px">
+    <div class="col g15" style="gap:14px">
+      <div class="row" style="gap:20px">
+        <div class="card g1 a left" style="--d:2;padding:18px 22px;text-align:center"><div style="font-size:54px">💻</div><b style="font-size:30px">내 컴퓨터</b><p class="md dim" style="font-size:24px;margin-top:4px"><code>.env.local</code> 있음 ✔️</p></div>
+        <div class="card g1 a right" style="--d:3;padding:18px 22px;text-align:center"><div style="font-size:54px">☁️</div><b style="font-size:30px">깃허브 서버</b><p class="md dim" style="font-size:24px;margin-top:4px"><code>.env.local</code> 없음 ❌</p></div>
+      </div>
+      <p class="md a" style="--d:4;font-size:28px">지난 수업의 배포는 <b>깃허브 서버가 빌드</b>함. 그런데 <code>.env.local</code> 은 올라가지 않으므로 서버는 URL·키 <b class="r">없이</b> 빌드함</p>
+      <table class="tbl a" style="--d:5;font-size:26px;border-spacing:0 8px">
+        <tr><th>Name</th><th>Secret</th></tr>
+        <tr><td><code>VITE_SUPABASE_URL</code></td><td><code>.env.local</code> 의 URL 값</td></tr>
+        <tr><td><code>VITE_SUPABASE_PUBLISHABLE_KEY</code></td><td><code>.env.local</code> 의 publishable key 값</td></tr>
+      </table>
+      <p class="md dim a" style="--d:6;font-size:25px">Settings → Secrets and variables → Actions → <b style="color:var(--ink)">New repository secret</b> 에서 <b style="color:var(--ink)">두 개</b>를 만듦</p>
+    </div>
+    <div class="col g1 a right" style="--d:4;gap:14px;justify-content:center">
+      <button class="sw" data-k="secret"><span class="knob"></span><span>Secret 2개 등록<small>끄면 = 등록 안 한 상태</small></span></button>
+      <div class="browser" style="flex:1;max-height:330px">
+        <div class="bb"><i></i><i></i><i></i><div class="url">내아이디.github.io/my-blog/</div></div>
+        <div class="pg" id="secRes"></div>
+      </div>
+    </div>
+  </div>
+</section>
+<section class="slide" data-sec="2일차" data-title="18-5 배포 설정 파일">
+  <div class="hd a"><span class="stepno">18-5</span><span class="badge agent">💬 에이전트에게</span></div>
+  <h2 class="a" style="--d:1">배포 설정 파일 <em>deploy.yml</em></h2>
+  <div class="body">
+    <div class="col g1" style="gap:18px">
+      <div class="term a left" style="--d:2"><div class="tb"><i></i><i></i><i></i><span>claude</span></div><pre class="type" style="font-size:24px">아래 내용을 그대로
+.github/workflows/deploy.yml 로
+만들어줘. 내용은 수정하지 마.
+
+(문서의 yml 전체를 붙여넣음)</pre></div>
+      <div class="call tip a" style="--d:4;font-size:26px"><span class="ic">📄</span><div>전체 파일은 <b>문서에서 복사</b>함. 지난 포트폴리오 파일과 다른 곳은 <b>Build 단계의 <code>env:</code> 3줄</b>뿐임</div></div>
+    </div>
+    <div class="code a right" style="--d:3;flex:2.4"><div class="tb"><i></i><i></i><i></i><span>deploy.yml · Build 단계만</span></div><pre style="font-size:22px;line-height:1.55"><span class="cmt">...</span>      - name: Install dependencies
+        run: npm ci
+      - name: Build
+        run: npm run build
+<span class="add">        env:</span><span class="add">          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}</span><span class="add">          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}</span>      - name: Setup Pages
+        uses: actions/configure-pages@v6
+<span class="cmt">...</span></pre></div>
+  </div>
+  <p class="src">액션 버전(v7, v6, v5 등)은 지난 포트폴리오 문서의 값을 그대로 가져온 것임</p>
+</section>
+<section class="slide" data-sec="2일차" data-title="18-6 푸시하고 기다리기">
+  <div class="hd a"><span class="stepno">18-6</span><span class="badge me">🖱 내가 직접</span></div>
+  <h2 class="a" style="--d:1">푸시하고 <em>기다리기</em></h2>
+  <div class="term a" style="--d:2"><div class="tb"><i></i><i></i><i></i><span>터미널</span></div><pre class="type" style="font-size:25px">git add .
+git commit -m "깃허브 페이지 배포 설정"
+git push</pre></div>
+  <p class="md dim a" style="--d:3;margin:22px 0 14px">저장소 <b style="color:var(--ink)">Actions</b> 탭에서 진행 상황을 봄 · 1~2분</p>
+  <div class="pl">
+    <div class="stg" style="--k:0"><span class="tick">✓</span><span class="ic">📥</span>Checkout<small>코드 받기</small></div><span class="arr">›</span>
+    <div class="stg" style="--k:1"><span class="tick">✓</span><span class="ic">📦</span>Install<small>npm ci</small></div><span class="arr">›</span>
+    <div class="stg" style="--k:2"><span class="tick">✓</span><span class="ic">🔑</span>Build<small>Secrets 주입</small></div><span class="arr">›</span>
+    <div class="stg" style="--k:3"><span class="tick">✓</span><span class="ic">🚀</span>Deploy<small>Pages 게시</small></div>
+  </div>
+  <div class="goal a" style="--d:8"><span class="lb">여기까지 하면</span><code>https://내아이디.github.io/my-blog/</code> 에서 블로그가 열리고 <b>DB의 글</b>이 보임</div>
+</section>
+<section class="slide" data-sec="2일차" data-title="안 되면 의심할 것 (배포)">
+  <div class="hd a"><span class="badge me">STEP 18 · 안 되면 의심할 것</span><span class="dim" style="font-size:26px">→ 키로 하나씩</span></div>
+  <h2 class="a sm" style="--d:1">배포 <em>문제 해결</em> 표</h2>
+  <div class="th3 a" style="--d:2"><span>증상</span><span>원인</span><span>해결</span></div>
+  <div class="tr3 f" style="padding:11px 26px;margin-bottom:9px;font-size:25px"><span class="sy">화면이 하얗게만 나옴</span><span><code>base</code> 를 안 넣었거나 저장소 이름과 다름</span><span class="fx">18-2 확인</span></div>
+  <div class="tr3 f" style="padding:11px 26px;margin-bottom:9px;font-size:25px"><span class="sy">화면은 뜨는데 글이 안 나오고 오류</span><span>Secret 을 등록 안 했거나 이름이 다름</span><span class="fx">18-4 이름 두 개를 글자 하나까지 확인 → <b>Re-run</b></span></div>
+  <div class="tr3 f" style="padding:11px 26px;margin-bottom:9px;font-size:25px"><span class="sy">Secret 을 고쳤는데 그대로</span><span>이미 빌드된 결과는 옛 값을 씀</span><span class="fx">Actions 탭에서 다시 실행(Re-run)</span></div>
+  <div class="tr3 f" style="padding:11px 26px;margin-bottom:9px;font-size:25px"><span class="sy">404 페이지</span><span>Source 가 GitHub Actions 가 아님</span><span class="fx">18-3 확인</span></div>
+  <div class="tr3 f" style="padding:11px 26px;margin-bottom:9px;font-size:25px"><span class="sy">Actions 가 빨간 X</span><span>빌드 실패</span><span class="fx">로그를 복사해 에이전트에게 (부록 A)</span></div>
+  <div class="tr3 f" style="padding:11px 26px;margin-bottom:9px;font-size:25px"><span class="sy">예전 화면이 계속 보임</span><span>브라우저 캐시</span><span class="fx"><code>Ctrl + Shift + R</code></span></div>
+</section>
+<section class="slide" data-sec="2일차" data-title="STEP 19 서로 글 남기기">
+  <div class="hd a"><span class="stepno">STEP 19</span><span class="badge me">🖱 내가 직접</span></div>
+  <h2 class="a" style="--d:1">서로의 블로그에 <em>글 남기기</em></h2>
+  <div class="body">
+    <div class="col g1" style="gap:16px;justify-content:center">
+      <ol class="ls sm a" style="--d:2"><li>내 배포 주소를 <b>오픈채팅</b>에 공유</li><li>다른 사람 블로그에서 <b>글 하나</b> 남기기</li><li>내 블로그에 남의 글이 쌓이는지 확인</li></ol>
+      <div class="call tip a" style="--d:4;font-size:26px"><span class="ic">👀</span><div>Table Editor의 <code>posts</code> 에서 <b>실제로 데이터가 쌓이는 것</b>을 눈으로 확인</div></div>
+    </div>
+    <div class="g1 a zoom" style="--d:3;display:flex;align-items:center;justify-content:center">
+      <div style="display:flex;align-items:center;gap:0;width:100%">
+        <div style="flex:1;display:flex;flex-direction:column;gap:26px">
+          <div style="display:flex;align-items:center"><span class="badge both" style="width:170px;text-align:center">🧑 내 블로그</span><div class="pipe"><i style="--t:0s"></i><i style="--t:1s"></i></div></div>
+          <div style="display:flex;align-items:center"><span class="badge both" style="width:170px;text-align:center">🙂 친구 A</span><div class="pipe"><i style="--t:.4s"></i><i style="--t:1.4s"></i></div></div>
+          <div style="display:flex;align-items:center"><span class="badge both" style="width:170px;text-align:center">😎 친구 B</span><div class="pipe"><i style="--t:.8s"></i><i style="--t:1.8s"></i></div></div>
+          <div style="display:flex;align-items:center"><span class="badge both" style="width:170px;text-align:center">🤓 친구 C</span><div class="pipe"><i style="--t:1.2s"></i><i style="--t:.2s"></i></div></div>
+        </div>
+        <div style="text-align:center"><svg class="db pulse" viewBox="0 0 120 140" width="150" height="175"><use href="#db"/></svg><p class="md" style="font-size:24px;margin-top:6px">내 DB</p></div>
+      </div>
+    </div>
+  </div>
+  <div class="call warn a" style="--d:6;margin-top:18px;font-size:27px"><span class="ic">🙏</span><div><b>장난으로 부적절한 글을 남기지 않을 것.</b> 누구나 쓸 수 있는 설정이라, 남긴 글은 대시보드에서 지우거나 정책을 바꿔야 사라짐</div></div>
+</section>
+<section class="slide" data-sec="2일차" data-title="심화 (빨리 끝난 사람)">
+  <div class="hd a"><span class="badge agent">💬 심화 · 빨리 끝난 사람용</span></div>
+  <h2 class="a" style="--d:1">화면만 고치는 <em>심화 2개</em></h2>
+  <div class="body">
+    <div class="col g1" style="gap:16px">
+      <div class="card a left" style="--d:2"><h3>🔍 검색창</h3><p class="md dim" style="margin-top:6px">제목에 입력한 글자가 들어 있는 글만 보이게. DB를 다시 부르지 않고 이미 불러온 글을 걸러냄</p></div>
+      <div class="term a left" style="--d:3"><div class="tb"><i></i><i></i><i></i><span>claude</span></div><pre class="type" style="font-size:22px">글 목록 위에 검색창을 추가해줘.
+- 제목에 입력한 글자가 들어 있는 글만
+- DB 를 다시 부르지 말고 화면에서 걸러낼 것
+- 파일은 PostList.tsx 와 App.css 만 수정</pre></div>
+    </div>
+    <div class="col g1" style="gap:16px">
+      <div class="card a right" style="--d:4"><h3>↕️ 정렬 바꾸기</h3><p class="md dim" style="margin-top:6px">"최신순 / 오래된순" 선택 버튼. 기본값은 최신순</p></div>
+      <div class="term a right" style="--d:5"><div class="tb"><i></i><i></i><i></i><span>claude</span></div><pre class="type" style="font-size:22px">글 목록에 "최신순 / 오래된순" 선택
+버튼을 추가해줘.
+- 이미 불러온 글을 화면에서 정렬할 것
+- 기본값은 최신순</pre></div>
+    </div>
+  </div>
+  <div class="call tip a" style="--d:7;margin-top:18px;font-size:26px"><span class="ic">📌</span><div><b>DB 설정은 바꾸지 않음.</b> 글 수정·삭제와 로그인은 정책 설계가 필요해 수업 범위에서 뺌</div></div>
+</section>
+<section class="slide" data-sec="부록" data-title="부록 A 막혔을 때">
+  <div class="hd a"><span class="badge agent">부록 A · 막혔을 때</span></div>
+  <h2 class="a" style="--d:1">먼저 <em>진단</em>, 고치는 건 <em>그다음</em></h2>
+  <div class="pl" style="margin:6px 0 20px">
+    <div class="stg a pop" style="--d:2;min-height:150px;--k:9"><span class="ic">😵</span>증상 발견</div><span class="arr">›</span>
+    <div class="stg a pop" style="--d:3;min-height:150px;--k:9;border-color:var(--yellow)"><span class="ic">🩺</span>진단 먼저<small>"고치지 마"</small></div><span class="arr">›</span>
+    <div class="stg a pop" style="--d:4;min-height:150px;--k:9"><span class="ic">🔎</span>후보 3개 확인<small>내가 직접</small></div><span class="arr">›</span>
+    <div class="stg a pop" style="--d:5;min-height:150px;--k:9"><span class="ic">🔧</span>그다음 고치기</div>
+  </div>
+  <div class="row" style="gap:24px">
+    <div class="term g1 a" style="--d:6"><div class="tb"><i></i><i></i><i></i><span>진단 프롬프트 (글이 안 나올 때)</span></div><pre class="type" style="font-size:22px">블로그 화면에서 DB 의 글이 안 나와.
+아직 코드는 고치지 말고, 원인 후보를
+확인 순서대로 3개만 알려줘.
+각 후보마다 내가 직접 확인할 방법도
+한 줄로 알려줘.</pre></div>
+    <div class="term g1 a" style="--d:7"><div class="tb"><i></i><i></i><i></i><span>오류 메시지를 넘길 때</span></div><pre class="type" style="font-size:22px" data-delay="1500">아래 오류가 났어. 원인과 해결 방법을
+알려줘. 코드를 고치기 전에 어느 파일의
+어느 부분을 고칠지 먼저 알려줘.
+
+[오류 메시지 붙여넣기]</pre></div>
+  </div>
+  <div class="call tip a" style="--d:8;margin-top:16px;font-size:26px"><span class="ic">📋</span><div>오류는 <code>F12</code> → Console 에서 <b>마지막 부분만</b> 복사함. 전체를 붙이지 않음</div></div>
+</section>
+<section class="slide" data-sec="부록" data-title="부록 B 되돌리기">
+  <div class="hd a"><span class="badge agent">부록 B · 되돌리기</span></div>
+  <h2 class="a" style="--d:1"><em>⏪ 되돌리기</em> 프롬프트</h2>
+  <div class="col" style="gap:18px;flex:1">
+    <div class="card a left" style="--d:2"><h3 style="font-size:34px;color:var(--yellow)">방금 한 수정이 마음에 안 들 때</h3><p class="md" style="margin-top:8px;font-size:27px">마지막 커밋 이후에 바뀐 파일 목록을 보여주고, 전부 마지막 커밋 상태로 되돌려줘. <b>되돌리기 전에 목록을 먼저 보여줘.</b></p></div>
+    <div class="card a left" style="--d:3"><h3 style="font-size:34px;color:var(--yellow)">체크포인트로 돌아가고 싶을 때</h3><p class="md" style="margin-top:8px;font-size:27px">git log 로 커밋 목록을 보여줘. 내가 고른 커밋 상태로 작업 폴더를 되돌리려고 해.</p></div>
+    <div class="card a left" style="--d:4"><h3 style="font-size:34px;color:var(--yellow)">어디가 바뀐지 모를 때</h3><p class="md" style="margin-top:8px;font-size:27px">마지막 커밋 이후에 바뀐 내용을 파일별로 한 줄씩 요약해줘.</p></div>
+    <div class="card a left" style="--d:5"><h3 style="font-size:34px;color:var(--pink)">에이전트가 시키지 않은 일을 했을 때</h3><p class="md" style="margin-top:8px;font-size:27px">방금 시키지 않은 파일을 바꿨어. 어떤 파일을 왜 바꿨는지 알려주고, <b>CLAUDE.md 의 작업 규칙을 다시 읽어줘.</b> 그 파일은 바꾸기 전 상태로 되돌려줘.</p></div>
+  </div>
+</section>
+<section class="slide" data-sec="부록" data-title="부록 C 자주 나는 문제">
+  <div class="hd a"><span class="badge agent">부록 C · 한눈에 보기</span></div>
+  <h2 class="a sm" style="--d:1">자주 나는 문제 · <em>가장 먼저 의심할 것</em></h2>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;font-size:29px;line-height:1.4">
+    <div class="card a pop" style="--d:2;padding:20px 28px"><b class="r"><code>new row violates row-level security policy</code></b><br>쓰기 정책 없음 또는 길이 규칙 위반</div>
+    <div class="card a pop" style="--d:3;padding:20px 28px"><b class="r"><code>permission denied for table posts</code></b><br><code>grant insert</code> 누락 (STEP 15)</div>
+    <div class="card a pop" style="--d:4;padding:20px 28px"><b class="r">로컬에선 되는데 배포하면 안 됨</b><br>깃허브 Secret 등록 안 함 (18-4)</div>
+    <div class="card a pop" style="--d:5;padding:20px 28px"><b class="r">배포하면 화면이 하얗게만 나옴</b><br><code>base</code> 설정 (18-2)</div>
+    <div class="card a pop" style="--d:6;padding:20px 28px;grid-column:span 2"><b class="r">에이전트가 파일을 너무 많이 만듦</b><br><code>CLAUDE.md</code> 규칙을 다시 읽으라고 지시</div>
+    </div>
+</section>
+<section class="slide" data-sec="마무리" data-title="마무리" data-confetti="1">
+  <div class="hd a"><span class="badge me">마무리</span></div>
+  <h2 class="a" style="--d:1">이틀 동안 <em>이만큼</em> 만들었음</h2>
+  <div class="row" style="gap:22px;flex-wrap:wrap">
+    <div class="card a pop" style="--d:2;flex:1 1 30%;text-align:center"><div style="font-size:60px">🖥️</div><p class="md">목록·상세·글쓰기 <b>화면 3개</b></p></div>
+    <div class="card a pop" style="--d:3;flex:1 1 30%;text-align:center"><div style="font-size:60px">🗄️</div><p class="md">Supabase에 <b>글이 저장</b>됨</p></div>
+    <div class="card a pop" style="--d:4;flex:1 1 30%;text-align:center"><div style="font-size:60px">🛡️</div><p class="md">권한 <b>두 겹</b>(grant + 정책)</p></div>
+    <div class="card a pop" style="--d:5;flex:1 1 30%;text-align:center"><div style="font-size:60px">🔑</div><p class="md">키는 <b>.env.local</b>과 Secrets에만</p></div>
+    <div class="card a pop" style="--d:6;flex:1 1 30%;text-align:center"><div style="font-size:60px">💾</div><p class="md"><b>체크포인트</b>마다 git 커밋</p></div>
+    <div class="card a pop" style="--d:7;flex:1 1 30%;text-align:center"><div style="font-size:60px">🚀</div><p class="md">내 주소로 <b>세상에 공개</b></p></div>
+  </div>
+  <div style="margin:auto 0 0;text-align:center" class="a" style="--d:9"><h1 style="font-size:110px" class="grad">수고했음!</h1></div>
+</section>
+
+<canvas id="cf"></canvas>
+</div><!-- /#stage -->
+
+<div id="prog"></div>
+<div id="ctr"></div>
+<div id="nav"><button id="bp" title="이전">◀</button><button id="bn" title="다음">▶</button></div>
+<button id="mbtn" title="슬라이드 목록 (g)">☰</button>
+<div id="menu"></div>
+<div id="hint">← → 이동 · g 목록 · f 전체화면 · 표는 → 키로 한 줄씩</div>
+
+<script>
+(function(){
+  var stage=document.getElementById('stage');
+  var slides=[].slice.call(stage.querySelectorAll('.slide'));
+  var N=slides.length, cur=0, fr=0;
+  var typeTimers=[];
+
+  /* ----- 화면 크기에 맞춰 1920x1080 무대를 축소 ----- */
+  function fit(){
+    var s=Math.min(window.innerWidth/1920,window.innerHeight/1080);
+    stage.style.transform='translate(-50%,-50%) scale('+s+')';
+  }
+  window.addEventListener('resize',fit); fit();
+
+  /* ----- 타자 효과 ----- */
+  slides.forEach(function(sl){
+    [].forEach.call(sl.querySelectorAll('.type'),function(el){
+      el.dataset.full=el.textContent;
+      el.innerHTML='<span class="t1"></span><span class="t2" style="visibility:hidden"></span>';
+      el.querySelector('.t2').textContent=el.dataset.full;
+    });
+  });
+  function setTyped(el,n){
+    var full=el.dataset.full;
+    el.querySelector('.t1').textContent=full.slice(0,n);
+    el.querySelector('.t2').textContent=full.slice(n);
+  }
+  function stopTypers(){typeTimers.forEach(function(t){clearTimeout(t);clearInterval(t)});typeTimers=[]}
+  function startTypers(sl){
+    [].forEach.call(sl.querySelectorAll('.type'),function(el){
+      setTyped(el,0); el.classList.remove('fin');
+      var delay=parseInt(el.dataset.delay||'900',10), n=0, full=el.dataset.full;
+      var t=setTimeout(function(){
+        var iv=setInterval(function(){
+          n+=3; if(n>=full.length){n=full.length;clearInterval(iv);el.classList.add('fin')}
+          setTyped(el,n);
+        },24);
+        typeTimers.push(iv);
+      },delay);
+      typeTimers.push(t);
+    });
+  }
+  function finishTypers(sl){
+    [].forEach.call(sl.querySelectorAll('.type'),function(el){setTyped(el,el.dataset.full.length);el.classList.add('fin')});
+  }
+
+  /* ----- 이동 ----- */
+  function frags(i){return [].slice.call(slides[i].querySelectorAll('.f'))}
+  function go(i,opt){
+    opt=opt||{};
+    i=Math.max(0,Math.min(N-1,i)); cur=i;
+    slides.forEach(function(s,k){
+      s.classList.toggle('on',k===i);
+      s.classList.toggle('before',k<i);
+      s.classList.toggle('after',k>i);
+    });
+    var fs=frags(i);
+    fs.forEach(function(f){f.classList.remove('show')}); fr=0;
+    if(opt.end){fs.forEach(function(f){f.classList.add('show')});fr=fs.length}
+    stopTypers();
+    if(opt.end) finishTypers(slides[i]); else startTypers(slides[i]);
+    stopConfetti();
+    if(slides[i].hasAttribute('data-confetti')) setTimeout(function(){if(cur===i)startConfetti()},700);
+    document.getElementById('prog').style.width=((i+1)/N*100)+'%';
+    document.getElementById('ctr').textContent=(i+1)+' / '+N;
+    [].forEach.call(document.querySelectorAll('#menu a'),function(a,k){a.classList.toggle('cur',k===i)});
+    try{history.replaceState(null,'','#'+(i+1))}catch(e){}
+  }
+  function next(){
+    var fs=frags(cur);
+    if(fr<fs.length){fs[fr++].classList.add('show');return}
+    if(cur<N-1) go(cur+1);
+  }
+  function prev(){
+    var fs=frags(cur);
+    if(fr>0){fs[--fr].classList.remove('show');return}
+    if(cur>0) go(cur-1,{end:true});
+  }
+
+  /* ----- 키보드 · 터치 ----- */
+  document.addEventListener('keydown',function(e){
+    if(e.ctrlKey||e.metaKey||e.altKey) return;
+    var k=e.key;
+    if(k==='ArrowRight'||k==='PageDown'||k===' '||k==='Enter'){e.preventDefault();next()}
+    else if(k==='ArrowLeft'||k==='PageUp'||k==='Backspace'){e.preventDefault();prev()}
+    else if(k==='Home'){go(0)}
+    else if(k==='End'){go(N-1)}
+    else if(k==='g'||k==='G'||k==='m'){toggleMenu()}
+    else if(k==='Escape'){document.getElementById('menu').classList.remove('open')}
+    else if(k==='f'||k==='F'){
+      if(!document.fullscreenElement){document.documentElement.requestFullscreen&&document.documentElement.requestFullscreen()}
+      else{document.exitFullscreen&&document.exitFullscreen()}
+    }
+  });
+  var tx=null;
+  document.addEventListener('touchstart',function(e){tx=e.touches[0].clientX},{passive:true});
+  document.addEventListener('touchend',function(e){
+    if(tx===null)return; var dx=e.changedTouches[0].clientX-tx; tx=null;
+    if(Math.abs(dx)>60){dx<0?next():prev()}
+  },{passive:true});
+  document.getElementById('bn').onclick=function(){this.blur();next()};
+  document.getElementById('bp').onclick=function(){this.blur();prev()};
+
+  /* ----- 목록 메뉴 ----- */
+  var menu=document.getElementById('menu'), last='';
+  slides.forEach(function(s,i){
+    var sec=s.dataset.sec||'';
+    if(sec!==last){var h=document.createElement('h4');h.textContent=sec;menu.appendChild(h);last=sec}
+    var a=document.createElement('a');
+    a.innerHTML='<span>'+(i+1)+'</span>'+(s.dataset.title||('슬라이드 '+(i+1)));
+    a.onclick=function(){go(i);menu.classList.remove('open')};
+    menu.appendChild(a);
+  });
+  function toggleMenu(){menu.classList.toggle('open')}
+  document.getElementById('mbtn').onclick=function(){this.blur();toggleMenu()};
+
+  /* ----- 체크리스트 · 주제 카드 ----- */
+  [].forEach.call(document.querySelectorAll('.chk:not(.tickrow)'),function(c){
+    c.onclick=function(){c.classList.toggle('is-done')};
+  });
+  var tps=[].slice.call(document.querySelectorAll('.tp'));
+  tps.forEach(function(t){
+    t.onclick=function(){
+      tps.forEach(function(x){x.classList.remove('sel')});
+      t.classList.add('sel');
+      document.getElementById('topicOut').textContent=t.dataset.t;
+    };
+  });
+
+  /* ----- 체험 1 : 권한 두 겹 ----- */
+  var rls={grant:false,policy:false};
+  function drawRls(){
+    var g1=document.getElementById('g1'), g2=document.getElementById('g2'), r=document.getElementById('rlsRes');
+    if(!g1) return;
+    g1.className='gate '+(rls.grant?'open':'closed'); g1.querySelector('.gi').textContent=rls.grant?'🔓':'🔒';
+    g2.className='gate '+(rls.policy?'open':'closed'); g2.querySelector('.gi').textContent=rls.policy?'🔓':'🔒';
+    var h;
+    if(!rls.grant) h='<div class="res bad"><b>permission denied for table posts</b>오류가 나면서 막힘. <code>grant</code> 가 없음</div>';
+    else if(!rls.policy) h='<div class="res warn"><b>[ ]  빈 목록</b>오류는 없는데 글이 하나도 안 나옴. 정책이 없음</div>';
+    else h='<div class="res ok"><b>글 2개 도착 🎉</b>첫 번째 글 · 두 번째 글</div>';
+    r.innerHTML=h;
+  }
+  [].forEach.call(document.querySelectorAll('.sw[data-k="grant"],.sw[data-k="policy"]'),function(b){
+    b.onclick=function(){rls[b.dataset.k]=!rls[b.dataset.k];b.classList.toggle('is-on',rls[b.dataset.k]);b.blur();drawRls()};
+  });
+  drawRls();
+
+  /* ----- 체험 2 : Secrets ----- */
+  var sec=false;
+  function drawSec(){
+    var p=document.getElementById('secRes'); if(!p) return;
+    p.innerHTML=sec
+      ? '<div class="bt" style="font-size:32px">📝 나의 블로그</div><div class="post" style="padding:8px 18px"><b style="font-size:24px">첫 번째 글</b></div><div class="post" style="padding:8px 18px"><b style="font-size:24px">두 번째 글</b></div>'
+      : '<p style="font-size:30px;color:#c0392b;margin-top:20px">⚠️ 오류 : 환경 변수가 비어 있음</p><p style="font-size:26px;color:#7a80a8;margin-top:10px">화면은 뜨는데 글이 안 나옴</p>';
+  }
+  [].forEach.call(document.querySelectorAll('.sw[data-k="secret"]'),function(b){
+    b.onclick=function(){sec=!sec;b.classList.toggle('is-on',sec);b.blur();drawSec()};
+  });
+  drawSec();
+
+  /* ----- 색종이 ----- */
+  var cv=document.getElementById('cf'), cx=cv.getContext('2d'), parts=[], raf=null;
+  cv.width=1920; cv.height=1080;
+  function startConfetti(){
+    parts=[]; var cols=['#3ecf8e','#6aa9ff','#ff6b9d','#ffd166','#b196ff','#ff9f5a'];
+    for(var i=0;i<260;i++){
+      parts.push({x:Math.random()*1920,y:-Math.random()*1000-20,w:10+Math.random()*14,h:16+Math.random()*16,
+        vx:(Math.random()-.5)*3,vy:2+Math.random()*5,r:Math.random()*6,vr:(Math.random()-.5)*.3,c:cols[i%cols.length]});
+    }
+    (function loop(){
+      cx.clearRect(0,0,1920,1080);
+      parts.forEach(function(p){
+        p.x+=p.vx; p.y+=p.vy; p.r+=p.vr;
+        cx.save(); cx.translate(p.x,p.y); cx.rotate(p.r); cx.fillStyle=p.c; cx.fillRect(-p.w/2,-p.h/2,p.w,p.h); cx.restore();
+      });
+      parts=parts.filter(function(p){return p.y<1120});
+      if(parts.length){raf=requestAnimationFrame(loop)}else{raf=null}
+    })();
+  }
+  function stopConfetti(){if(raf){cancelAnimationFrame(raf);raf=null}cx.clearRect(0,0,1920,1080);parts=[]}
+
+  /* ----- 시작 ----- */
+  var start=parseInt((location.hash||'').replace('#',''),10);
+  go(isNaN(start)?0:start-1);
+  setTimeout(function(){var h=document.getElementById('hint');h.style.opacity=0;setTimeout(function(){h.style.display='none'},700)},5000);
+})();
+</script>
+</body>
+</html>
