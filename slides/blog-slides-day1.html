@@ -382,7 +382,7 @@ body:hover #nav{opacity:.85}
       <h3>③ 글쓰기 <span class="badge both" style="font-size:22px;vertical-align:middle">2일차</span></h3><p class="md dim">제목·내용·닉네임을 입력해 저장함</p>
     </div>
   </div>
-  <div class="call tip a" style="--d:8;margin-top:auto"><span class="ic">💡</span><div>글은 코드 안이 아니라 <b>Supabase 데이터베이스(DB)</b>에 저장됨. 그래서 새로고침해도, 다른 사람이 접속해도 글이 남아 있음</div></div>
+  <div class="call tip a" style="--d:8;margin-top:auto"><span class="ic">💡</span><div>글은 코드 파일 안에 두지 않고 <b>Supabase 데이터베이스(DB)</b>에 저장함. 그래서 새로고침하거나 다른 사람이 접속해도 글이 남아 있음</div></div>
 </section>
 <section class="slide" data-sec="시작" data-title="글은 어디에 저장되나">
   <div class="hd a"><span class="badge me">왜 DB가 필요한가</span></div>
@@ -634,7 +634,7 @@ created_at), 분위기 한 줄
 
 코드는 아직 만들지 마.</pre></div>
   </div>
-  <div class="goal a" style="--d:8"><span class="lb">여기까지 하면</span><code>docs/요구사항.md</code> 가 만들어지고, 에이전트가 질문을 마친 상태</div>
+  <div class="goal a" style="--d:8"><span class="lb">여기까지 하면</span><code>docs/요구사항.md</code> 가 만들어지고 에이전트가 질문을 마친 상태</div>
 </section>
 <section class="slide" data-sec="1일차" data-title="STEP 5 샘플 글 데이터">
   <div class="hd a"><span class="stepno">STEP 5</span><span class="badge agent">💬 에이전트에게</span></div>
@@ -1090,7 +1090,7 @@ posts 테이블에서 가져오게 바꿔줘.
   <div class="col" style="gap:18px;flex:1">
     <div class="card a left" style="--d:2"><h3 style="font-size:34px;color:var(--yellow)">방금 한 수정이 마음에 안 들 때</h3><p class="md" style="margin-top:8px;font-size:27px">마지막 커밋 이후에 바뀐 파일 목록을 보여주고, 전부 마지막 커밋 상태로 되돌려줘. <b>되돌리기 전에 목록을 먼저 보여줘.</b></p></div>
     <div class="card a left" style="--d:3"><h3 style="font-size:34px;color:var(--yellow)">체크포인트로 돌아가고 싶을 때</h3><p class="md" style="margin-top:8px;font-size:27px">git log 로 커밋 목록을 보여줘. 내가 고른 커밋 상태로 작업 폴더를 되돌리려고 해.</p></div>
-    <div class="card a left" style="--d:4"><h3 style="font-size:34px;color:var(--yellow)">어디가 바뀐지 모를 때</h3><p class="md" style="margin-top:8px;font-size:27px">마지막 커밋 이후에 바뀐 내용을 파일별로 한 줄씩 요약해줘.</p></div>
+    <div class="card a left" style="--d:4"><h3 style="font-size:34px;color:var(--yellow)">어디가 바뀌었는지 모를 때</h3><p class="md" style="margin-top:8px;font-size:27px">마지막 커밋 이후에 바뀐 내용을 파일별로 한 줄씩 요약해줘.</p></div>
     <div class="card a left" style="--d:5"><h3 style="font-size:34px;color:var(--pink)">에이전트가 시키지 않은 일을 했을 때</h3><p class="md" style="margin-top:8px;font-size:27px">방금 시키지 않은 파일을 바꿨어. 어떤 파일을 왜 바꿨는지 알려주고, <b>CLAUDE.md 의 작업 규칙을 다시 읽어줘.</b> 그 파일은 바꾸기 전 상태로 되돌려줘.</p></div>
   </div>
 </section>
