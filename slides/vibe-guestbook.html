@@ -1,0 +1,926 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%2316161b'/%3E%3Crect x='20' y='20' width='60' height='14' fill='%23c93d14'/%3E%3Crect x='20' y='44' width='60' height='8' fill='%23f2efe8'/%3E%3Crect x='20' y='60' width='40' height='8' fill='%23f2efe8'/%3E%3C/svg%3E">
+<title>방명록 추가 · giscus · 바이브코딩</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#f2efe8;--ink:#16161b;--panel:#fbfaf6;--panel2:#e9e5db;
+  --line:rgba(22,22,27,.28);--text:#16161b;--dim:#5f5e58;
+  --acc:#c93d14;--green:#1b7f52;--blue:#2147c9;--amber:#a96b00;
+  /* 이전 이름 호환 */
+  --bg:var(--paper);--yellow:var(--acc);--pink:var(--acc);--red:var(--acc);--orange:var(--amber);--purple:#4b3bc4;
+  --sans:'Pretendard Variable',Pretendard,'Noto Sans KR','Malgun Gothic','Apple SD Gothic Neo',sans-serif;
+  --mono:'JetBrains Mono','Noto Sans KR',monospace;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:#0c0c0f;overflow:hidden;font-family:var(--sans);-webkit-font-smoothing:antialiased}
+#stage{position:absolute;left:50%;top:50%;width:1920px;height:1080px;transform-origin:center center;background:var(--paper);overflow:hidden;color:var(--ink);word-break:keep-all;overflow-wrap:break-word}
+.bg{display:none}
+
+/* ---------- 슬라이드 ---------- */
+.slide{position:absolute;inset:0;z-index:1;padding:70px 120px 84px;display:flex;flex-direction:column;opacity:0;visibility:hidden;transition:opacity .4s,transform .4s,visibility 0s .4s}
+.slide.on{opacity:1;visibility:visible;transform:none;transition:opacity .4s,transform .4s,visibility 0s}
+.slide.before{transform:translateX(-70px)}
+.slide.after{transform:translateX(70px)}
+.a{opacity:0}
+.on .a{animation:rise .65s cubic-bezier(.2,.8,.2,1) both;animation-delay:calc(var(--d,0)*.12s + .1s)}
+.on .a.pop{animation-name:pop}
+.on .a.zoom{animation-name:zoom}
+.on .a.left{animation-name:fromleft}
+.on .a.right{animation-name:fromright}
+@keyframes rise{from{opacity:0;transform:translateY(34px)}to{opacity:1;transform:none}}
+@keyframes pop{0%{opacity:0;transform:scale(.7)}65%{opacity:1;transform:scale(1.05)}100%{opacity:1;transform:none}}
+@keyframes zoom{from{opacity:0;transform:scale(.9)}to{opacity:1;transform:none}}
+@keyframes fromleft{from{opacity:0;transform:translateX(-60px)}to{opacity:1;transform:none}}
+@keyframes fromright{from{opacity:0;transform:translateX(60px)}to{opacity:1;transform:none}}
+.f{opacity:0;transform:translateY(24px);transition:opacity .5s,transform .5s;pointer-events:none}
+.f.show{opacity:1;transform:none;pointer-events:auto}
+
+/* ---------- 글자 ---------- */
+h1,h2,h3{margin:0;font-family:var(--sans);font-weight:800;letter-spacing:-.035em}
+h2{font-size:80px;line-height:1.12;margin:20px 0 26px}
+h2.sm{font-size:66px;margin:16px 0 20px}
+h3{font-size:40px;line-height:1.25;letter-spacing:-.02em}
+h2 em,h1 em,.grad,.grad2{font-style:normal;color:var(--acc);background:none;-webkit-text-fill-color:currentColor}
+p{margin:0}
+.lead{font-size:38px;line-height:1.55}
+.md{font-size:32px;line-height:1.5}
+.dim{color:var(--dim)}
+.mono{font-family:var(--mono)}
+b{font-weight:800}
+b.g{color:var(--green)}b.y,b.p,b.r{color:var(--acc)}b.bl{color:var(--blue)}b.o{color:var(--amber)}
+code{font:500 .86em var(--mono);background:rgba(22,22,27,.09);padding:2px 9px;border-radius:3px;color:var(--ink)}
+.src{position:absolute;left:120px;bottom:30px;font-size:22px;color:var(--dim)}
+
+/* ---------- 상단 띠 ---------- */
+.hd{display:flex;align-items:baseline;gap:22px;flex-wrap:wrap;padding-bottom:14px;border-bottom:3px solid var(--ink)}
+.stepno{font:800 32px var(--sans);letter-spacing:.01em;color:var(--acc);background:none;padding:0;border-radius:0}
+.badge{font:700 24px var(--sans);padding:3px 14px;border:2px solid var(--ink);border-radius:0;letter-spacing:0;background:none}
+.badge.agent{background:var(--ink);color:var(--paper)}
+.badge.me{color:var(--ink)}
+.badge.both{border-color:var(--acc);color:var(--acc)}
+.chips{display:flex;gap:12px;flex-wrap:wrap}
+.chips span{font:500 26px var(--mono);padding:6px 16px;border:2px solid var(--ink);border-radius:0}
+
+/* ---------- 레이아웃 ---------- */
+.body{flex:1;display:flex;gap:48px;min-height:0;align-items:stretch}
+.col{display:flex;flex-direction:column;gap:22px;min-width:0}
+.row{display:flex;gap:28px;align-items:stretch}
+.g1{flex:1}.g15{flex:1.5}.g2{flex:2}
+.mid{justify-content:center}
+.ac{align-items:center}
+.card{background:var(--panel);border:1px solid var(--line);border-top:5px solid var(--ink);border-radius:0;padding:26px 32px}
+.card h3{margin-bottom:10px}
+ul.ls,ol.ls{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:18px;font-size:36px;line-height:1.45}
+ul.ls li,ol.ls li{padding-left:56px;position:relative}
+ul.ls li::before{content:'';position:absolute;left:6px;top:.62em;width:20px;height:20px;background:var(--acc)}
+ol.ls{counter-reset:n}
+ol.ls li::before{counter-increment:n;content:counter(n);position:absolute;left:0;top:.06em;width:42px;height:42px;background:var(--ink);color:var(--paper);font:800 26px/42px var(--sans);text-align:center}
+ul.ls.sm,ol.ls.sm{font-size:32px;gap:14px}
+
+.call{display:flex;gap:20px;align-items:flex-start;padding:20px 28px;border-radius:0;font-size:30px;line-height:1.5;border:0;border-left:8px solid var(--ink);background:var(--panel2)}
+.call .ic{font-size:38px;line-height:1.1;flex:none}
+.call.warn{border-left-color:var(--amber);background:#efe4cc}
+.call.tip{border-left-color:var(--ink);background:var(--panel2)}
+.call.bad{border-left-color:var(--acc);background:#f1d9d0}
+.call.ok{border-left-color:var(--green);background:#d8e8dd}
+.call b{color:var(--ink)}
+.goal{margin-top:20px;display:flex;align-items:center;gap:24px;padding:16px 28px;border-radius:0;font-size:32px;line-height:1.4;background:var(--ink);color:var(--paper)}
+.goal .dim{color:#bdbbb2}
+.goal b{color:var(--paper)!important}
+.goal code{background:rgba(255,255,255,.16);color:var(--paper)}
+.goal .lb{flex:none;font:800 26px var(--sans);background:var(--acc);color:var(--paper);padding:6px 18px;border-radius:0}
+
+/* ---------- 터미널 · 코드 ---------- */
+.term,.code{background:#17171c;border:0;border-radius:4px;overflow:hidden;display:flex;flex-direction:column;color:#e9e8e2}
+.tb{display:flex;align-items:center;gap:10px;padding:13px 20px;background:#0f0f13;font:500 22px var(--mono);color:#9a9890}
+.tb i{width:13px;height:13px;border-radius:50%;background:#55534d}
+.tb span{margin-left:12px}
+.term pre,.code pre{margin:0;padding:22px 28px;font:400 24px/1.55 var(--mono);white-space:pre-wrap;color:#ecebe5;flex:1}
+.t1::after{content:'▍';color:#ff7a4d;animation:blink 1s steps(2) infinite}
+.fin .t1::after{content:''}
+@keyframes blink{50%{opacity:0}}
+.kw{color:#c6aaff}.cm{color:#8b8a82}.st{color:#f2c96b}.fn{color:#7db4ff}.nu{color:#ff9f5a}.pr{color:#5fd7a1}.hl{background:rgba(201,61,20,.14);color:var(--acc);padding:0 6px;font-weight:800}
+.term .hl{background:rgba(255,122,77,.22);color:#ffb08f}
+.add{display:block;background:rgba(95,215,161,.18);margin:0 -28px;padding:0 28px;box-shadow:inset 6px 0 0 #5fd7a1}
+.cmt{display:block;color:#8b8a82}
+
+/* ---------- 표 ---------- */
+.tbl{border-collapse:collapse;width:100%;font-size:32px}
+.tbl th{font:800 24px var(--sans);color:var(--dim);text-align:left;padding:0 22px 8px;letter-spacing:.04em}
+.tbl td{background:transparent;padding:16px 22px;border-top:2px solid var(--ink)}
+.tbl tr:last-child td{border-bottom:2px solid var(--ink)}
+.tr3{display:grid;grid-template-columns:1.25fr 1fr 1.25fr;gap:22px;padding:14px 22px;border-radius:0;background:transparent;border:0;border-top:2px solid var(--ink);font-size:27px;line-height:1.4;align-items:center;margin-bottom:0}
+.tr3 .sy{color:var(--acc);font-weight:800}
+.tr3 .fx{color:var(--green);font-weight:700}
+.th3{display:grid;grid-template-columns:1.25fr 1fr 1.25fr;gap:22px;padding:0 22px 8px;font:800 24px var(--sans);color:var(--dim);letter-spacing:.04em}
+
+/* ---------- 브라우저 목업 ---------- */
+.browser{background:#f6f7ff;color:#1d2140;border:2px solid var(--ink);border-radius:8px;overflow:hidden;display:flex;flex-direction:column}
+.bb{display:flex;align-items:center;gap:9px;padding:11px 18px;background:#dfe2f5;border-bottom:2px solid var(--ink)}
+.bb i{width:13px;height:13px;border-radius:50%;background:#9a9db8;flex:none}
+.url{margin-left:10px;flex:1;background:#fff;border-radius:999px;padding:5px 18px;font:500 21px var(--mono);color:#7a80a8;white-space:nowrap;overflow:hidden}
+.pg{padding:22px 26px;flex:1;position:relative;overflow:hidden}
+.bt{font:800 38px var(--sans);letter-spacing:-.03em;color:#2b2f6b;margin-bottom:14px}
+.post{background:#fff;border-radius:10px;padding:14px 22px;margin-bottom:12px;box-shadow:0 2px 0 #e3e5f7}
+.post b{display:block;font-size:28px;line-height:1.3}
+.post small{display:block;color:#7a80a8;font-size:22px;margin-top:2px}
+.btn{display:inline-block;background:#4a5bff;color:#fff;padding:8px 22px;border-radius:8px;font-size:24px;font-weight:700}
+.inp{background:#fff;border:2px solid #cfd3ee;border-radius:8px;padding:8px 14px;font-size:24px;color:#1d2140;margin-bottom:10px;white-space:nowrap;overflow:hidden}
+.float{animation:fl 5s ease-in-out infinite alternate}
+@keyframes fl{from{transform:translateY(0)}to{transform:translateY(-14px)}}
+
+/* ---------- DB · 파이프 ---------- */
+svg.db{color:var(--ink)}
+.pipe{position:relative;height:4px;background:repeating-linear-gradient(90deg,var(--ink) 0 12px,transparent 12px 24px);flex:1;min-width:80px;opacity:.9}
+.pipe i{position:absolute;top:-10px;left:0;width:24px;height:24px;border-radius:50%;background:var(--acc);animation:flow 2.1s linear infinite;animation-delay:var(--t,0s);opacity:0}
+.pipe i:nth-child(even){background:var(--ink);animation-direction:reverse}
+@keyframes flow{0%{left:0;opacity:0}10%{opacity:1}90%{opacity:1}100%{left:calc(100% - 24px);opacity:0}}
+.sheet{border-collapse:separate;border-spacing:0;font-size:25px;background:#fff;color:#1d2140;border:2px solid var(--ink)}
+.sheet th{background:var(--ink);color:var(--paper);padding:12px 18px;text-align:left;font-weight:700;font-family:var(--mono)}
+.sheet td{padding:12px 18px;border-top:1px solid #d8d6cf;white-space:nowrap}
+.sheet td.mono{font-family:var(--mono)}
+
+/* ---------- 구간 표지 ---------- */
+.slide.divider{background:var(--ink);color:var(--paper);justify-content:center;align-items:flex-start}
+.dv-big{font:800 340px/1 var(--sans);color:var(--acc);letter-spacing:-.06em}
+.divider h2{font-size:96px;color:var(--paper)}
+.divider h2 em{color:var(--acc)}
+.divider .dim{color:#a9a79f}
+.orb{display:none}
+
+/* ---------- 로드맵 ---------- */
+.rd{display:flex;flex-direction:column;gap:18px}
+.rdh{font:800 44px var(--sans);letter-spacing:-.03em;display:flex;align-items:center;gap:20px}
+.day{font:800 34px var(--sans);padding:2px 20px;border-radius:0;color:var(--paper);background:var(--ink)}
+.day.d2{background:var(--acc)}
+.road{position:relative;display:grid;grid-template-columns:repeat(4,1fr);margin-bottom:14px}
+.road::before,.road::after{content:'';position:absolute;left:12.5%;right:12.5%;top:46px;height:6px;background:rgba(22,22,27,.2)}
+.road::after{background:var(--ink);transform-origin:left;transform:scaleX(0)}
+.road.p::after{background:var(--acc)}
+.on .road::after{animation:grow 1.6s .5s ease-out both}
+@keyframes grow{to{transform:scaleX(1)}}
+.node{display:flex;flex-direction:column;align-items:center;text-align:center;gap:10px;position:relative;z-index:1}
+.node .dot{width:96px;height:96px;border-radius:0;background:var(--paper);border:5px solid var(--ink);display:grid;place-items:center;font:800 46px var(--sans)}
+.road.p .dot{border-color:var(--acc);color:var(--acc)}
+.node b{font-size:32px}
+.node small{font-size:25px;color:var(--dim)}
+
+/* ---------- 카드 · 용어 ---------- */
+.cards5{display:grid;grid-template-columns:repeat(5,1fr);gap:0;flex:none;border-top:5px solid var(--ink)}
+.tc{background:transparent;border:0;border-right:1px solid var(--line);border-radius:0;padding:30px 22px;display:flex;flex-direction:column;gap:14px;align-items:flex-start;text-align:left}
+.tc:last-child{border-right:0}
+.tc .em{font-size:70px;line-height:1}
+.tc h3{font-size:54px}
+.tc p{font-size:32px;line-height:1.5;color:var(--dim)}
+.tc p b{color:var(--ink)}
+.pulse{animation:pulse 2.4s ease-in-out infinite}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
+.shake{animation:shake 3s ease-in-out infinite}
+@keyframes shake{0%,70%,100%{transform:translateX(0)}74%{transform:translateX(-10px) rotate(-3deg)}78%{transform:translateX(10px) rotate(3deg)}82%{transform:translateX(-8px)}86%{transform:translateX(8px)}90%{transform:translateX(-4px)}}
+
+/* ---------- 체크리스트 · 토글 ---------- */
+.chk{display:flex;align-items:center;gap:22px;padding:15px 24px;border-radius:0;background:var(--panel);border:2px solid var(--ink);font-size:33px;cursor:pointer;transition:.25s;user-select:none}
+.chk .bx{width:42px;height:42px;border-radius:0;border:3px solid var(--ink);display:grid;place-items:center;font-size:28px;color:transparent;transition:.2s;flex:none}
+.chk.is-done{background:#d8e8dd;border-color:var(--green)}
+.chk.is-done .bx{background:var(--green);border-color:var(--green);color:var(--paper)}
+.chk small{margin-left:auto;font:500 24px var(--mono);color:var(--dim)}
+.tp{padding:18px 24px;border-radius:0;background:var(--panel);border:2px solid var(--ink);font-size:32px;font-weight:700;cursor:pointer;display:flex;gap:16px;align-items:center;transition:.2s;user-select:none}
+.tp:hover{transform:translateY(-3px)}
+.tp.sel{background:var(--acc);color:var(--paper);border-color:var(--acc)}
+.tp span{font-size:42px}
+.sw{display:flex;align-items:center;gap:20px;padding:16px 24px;border-radius:0;background:var(--panel);border:2px solid var(--ink);cursor:pointer;font:700 30px var(--sans);color:var(--ink);text-align:left;width:100%}
+.sw .knob{width:84px;height:44px;border-radius:22px;background:#8d8b84;position:relative;flex:none;transition:.3s}
+.sw .knob::after{content:'';position:absolute;left:5px;top:5px;width:34px;height:34px;border-radius:50%;background:#fff;transition:.3s}
+.sw.is-on .knob{background:var(--green)}
+.sw.is-on .knob::after{left:45px}
+.sw small{display:block;font:500 22px var(--mono);color:var(--dim);margin-top:2px}
+.gates{display:flex;align-items:center;gap:0}
+.person{font-size:86px;flex:none}
+.gate{flex:none;width:210px;height:210px;border-radius:0;border:5px solid;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;transition:.35s;text-align:center;font-size:26px;font-weight:800}
+.gate .gi{font-size:66px;line-height:1}
+.gate.closed{border-color:var(--acc);background:#f1d9d0}
+.gate.open{border-color:var(--green);background:#d8e8dd}
+.res{border-radius:0;padding:22px 30px;font-size:30px;line-height:1.45;border:0;border-left:10px solid;animation:zoom .45s both}
+.res b{display:block;font:700 32px var(--mono);margin-bottom:4px}
+.res.bad{background:#f1d9d0;border-color:var(--acc)}
+.res.warn{background:#efe4cc;border-color:var(--amber)}
+.res.ok{background:#d8e8dd;border-color:var(--green)}
+
+/* ---------- 파이프라인 · 단계 ---------- */
+.pl{display:flex;align-items:center;gap:0}
+.stg{flex:1;background:var(--panel);border:3px solid var(--ink);border-radius:0;padding:24px 14px;text-align:center;font-size:29px;font-weight:700;position:relative;min-height:200px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;line-height:1.35}
+.stg .ic{font-size:50px;line-height:1}
+.stg small{font-size:23px;color:var(--dim);font-weight:400}
+.stg .tick{position:absolute;top:-20px;right:-16px;width:46px;height:46px;border-radius:0;background:var(--green);color:var(--paper);font:800 28px/46px var(--sans);text-align:center;transform:scale(0)}
+.pl .arr{flex:none;width:44px;text-align:center;font-size:40px;color:var(--ink)}
+.on .stg{animation:stg 1s both;animation-delay:calc(var(--k)*1.5s + .8s)}
+.on .stg .tick{animation:tick .5s both;animation-delay:calc(var(--k)*1.5s + 1.6s)}
+@keyframes stg{0%{border-color:var(--ink);background:var(--panel)}30%{border-color:var(--acc);background:#f1d9d0}100%{border-color:var(--green);background:#d8e8dd}}
+@keyframes tick{from{transform:scale(0)}to{transform:scale(1)}}
+.on .stg.a.pop{animation-name:pop;animation-duration:.7s;animation-delay:calc(var(--d,0)*.12s + .12s)}
+.stp{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+.sc{background:var(--panel);border:1px solid var(--line);border-top:5px solid var(--ink);border-radius:0;padding:22px 28px;font-size:30px;line-height:1.4;position:relative;display:flex;flex-direction:column;gap:8px}
+.sc .no{font:800 30px var(--sans);color:var(--paper);background:var(--ink);align-self:flex-start;padding:2px 16px;border-radius:0}
+.sc b{font-size:34px}
+.sc small{font-size:25px;color:var(--dim)}
+.sc.new{border-top-color:var(--acc);background:#f1d9d0}
+.sc.new .no{background:var(--acc)}
+.map{display:grid;grid-template-columns:repeat(13,1fr);gap:8px}
+.mt{border-radius:0;padding:14px 0;text-align:center;font:800 40px var(--sans);border:3px solid var(--ink);display:flex;flex-direction:column;gap:2px;background:transparent}
+.mt small{font:500 22px var(--sans)}
+.mt.ag{background:var(--ink);color:var(--paper)}
+.mt.me{background:transparent}
+.mt.bo{background:var(--acc);border-color:var(--acc);color:var(--paper)}
+
+/* ---------- 오버레이 UI ---------- */
+#prog{position:fixed;left:0;top:0;height:6px;background:var(--acc);width:0;transition:width .4s;z-index:60}
+#ctr{position:fixed;right:18px;bottom:10px;font:500 18px var(--mono);color:#8c8a82;z-index:60}
+#nav{position:fixed;left:50%;bottom:10px;transform:translateX(-50%);display:flex;gap:10px;opacity:0;transition:.3s;z-index:60}
+body:hover #nav{opacity:.85}
+#nav button,#mbtn{width:44px;height:44px;border-radius:50%;border:2px solid #16161b;background:#f2efe8;color:#16161b;font-size:20px;cursor:pointer}
+#mbtn{position:fixed;right:16px;top:16px;z-index:61;opacity:.3}
+#mbtn:hover{opacity:1}
+#menu{position:fixed;right:0;top:0;bottom:0;width:440px;background:#16161b;transform:translateX(100%);transition:.3s;overflow:auto;z-index:70;padding:20px 18px 40px;font:500 18px var(--sans);color:#d7d5cd}
+#menu.open{transform:none}
+#menu h4{margin:18px 8px 6px;font:700 16px var(--sans);color:#8f8d85;letter-spacing:.08em}
+#menu a{display:flex;gap:12px;padding:8px 12px;cursor:pointer;color:#d7d5cd;text-decoration:none}
+#menu a:hover{background:#26262d}
+#menu a.cur{background:#c93d14;color:#fff}
+#menu a span{color:#8f8d85;font-family:var(--mono);width:30px;flex:none}
+#menu a.cur span{color:#fff}
+#hint{position:fixed;left:50%;top:22px;transform:translateX(-50%);background:#16161b;color:#f2efe8;padding:10px 22px;font:500 18px var(--sans);z-index:80;transition:opacity .6s}
+#cf{position:absolute;left:0;top:0;width:1920px;height:1080px;pointer-events:none;z-index:5}
+
+/* ---------- 슬라이드별 ---------- */
+.cover{flex-direction:row;align-items:center;gap:50px}
+.cv-l{flex:1.2;display:flex;flex-direction:column;gap:26px}
+.cv-l h1{font-size:126px;line-height:1.08;letter-spacing:-.05em}
+.cv-r{flex:1;display:flex;align-items:center}
+.swap{position:relative;display:inline-block}
+.swap b{font-weight:800}
+.swap .s1{color:var(--acc);animation:sw1 6s infinite}
+.swap .s2{position:absolute;left:0;top:0;white-space:nowrap;color:#ffb08f;animation:sw2 6s infinite;opacity:0}
+@keyframes sw1{0%,38%{opacity:1}45%,92%{opacity:0}100%{opacity:1}}
+@keyframes sw2{0%,38%{opacity:0}45%,92%{opacity:1}100%{opacity:0}}
+.wipe{position:absolute;inset:0;background:#fff;animation:wipe 6s ease-in-out infinite}
+@keyframes wipe{0%,10%{clip-path:inset(0 100% 0 0)}45%,80%{clip-path:inset(0 0 0 0)}100%{clip-path:inset(0 100% 0 0)}}
+.view{position:absolute;inset:0;padding:22px 26px;background:#f6f7ff}
+.v-list{animation:vlist 8s infinite}
+.v-det{animation:vdet 8s infinite}
+@keyframes vlist{0%,40%{opacity:1}46%,90%{opacity:0}96%,100%{opacity:1}}
+@keyframes vdet{0%,40%{opacity:0}46%,90%{opacity:1}96%,100%{opacity:0}}
+.finger{position:absolute;font-size:56px;animation:fing 8s infinite;z-index:3;left:75%;top:85%;opacity:0}
+@keyframes fing{0%{left:75%;top:85%;opacity:0;transform:scale(1)}12%{left:52%;top:44%;opacity:1}30%{left:52%;top:44%;transform:scale(1)}34%{transform:scale(.8)}38%{transform:scale(1)}44%{left:52%;top:44%;opacity:0}52%{left:30%;top:12%;opacity:0}60%{left:30%;top:12%;opacity:1;transform:scale(1)}80%{left:30%;top:12%;transform:scale(1)}84%{transform:scale(.8)}88%{transform:scale(1)}94%{opacity:0}100%{left:75%;top:85%;opacity:0}}
+.sync{position:relative}
+.sync .nr{animation:nrow 9s infinite}
+.sync .nc{animation:ncard 9s infinite}
+@keyframes nrow{0%,10%{opacity:0;transform:translateY(-24px)}20%,92%{opacity:1;transform:none}100%{opacity:0}}
+@keyframes ncard{0%,50%{opacity:0;transform:translateY(-30px)}62%,92%{opacity:1;transform:none}100%{opacity:0}}
+.sync .nr td{background:#d9fbe9}
+.arrowx{font-size:90px;color:var(--acc);animation:arr 9s infinite}
+@keyframes arr{0%,32%{opacity:.2;transform:scale(1)}40%{opacity:1;transform:scale(1.25)}52%,100%{opacity:.2;transform:scale(1)}}
+.typew{display:inline-block;overflow:hidden;white-space:nowrap;vertical-align:bottom;max-width:0;animation:typew 9s steps(14) infinite}
+@keyframes typew{0%,5%{max-width:0}30%,90%{max-width:420px}100%{max-width:0}}
+.on .tickrow{animation:rise .6s both;animation-delay:calc(var(--d)*.5s + .6s)}
+.tickrow{opacity:0}
+.hole{animation:hole 4s ease-in-out infinite alternate}
+@keyframes hole{from{transform:rotate(-8deg)}to{transform:rotate(6deg)}}
+.loading{height:14px;background:var(--panel2);overflow:hidden;border:2px solid var(--ink)}
+.loading i{display:block;height:100%;width:0;background:var(--acc);animation:load 12s ease-in-out infinite}
+@keyframes load{0%{width:4%}80%{width:92%}100%{width:100%}}
+.cy{animation:cyc 9s infinite;position:absolute;left:0;right:0;text-align:center;opacity:0}
+.cy:nth-child(2){animation-delay:3s}.cy:nth-child(3){animation-delay:6s}
+@keyframes cyc{0%{opacity:0;transform:translateY(16px)}6%,30%{opacity:1;transform:none}36%,100%{opacity:0}}
+.sav{font-size:230px;line-height:1;animation:pulse 2s ease-in-out infinite}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><symbol id="db" viewBox="0 0 120 140"><ellipse cx="60" cy="26" rx="50" ry="20" fill="currentColor"/><path d="M10 26v88c0 11 22 20 50 20s50-9 50-20V26c0 11-22 20-50 20S10 37 10 26z" fill="currentColor" opacity=".85"/><path d="M10 62c0 11 22 20 50 20s50-9 50-20M10 98c0 11 22 20 50 20s50-9 50-20" stroke="#f2efe8" stroke-width="5" fill="none" opacity=".55"/></symbol></svg>
+<div id="stage">
+<div class="bg"></div>
+
+<section class="slide cover" data-sec="시작" data-title="표지">
+  <div class="cv-l">
+    <div class="a" style="--d:0"><span class="badge me">바이브코딩 · 포트폴리오 이어서</span></div>
+    <h1 class="a" style="--d:1">포트폴리오에<br><em>방명록</em> 달기</h1>
+    <p class="a lead dim" style="--d:2">깃허브 페이지로 배포한 포트폴리오에<br>깃허브 계정으로 글을 남기는 방명록을 붙임</p>
+    <div class="a chips" style="--d:3"><span>GitHub Discussions</span><span>giscus</span><span>Claude Code</span></div>
+  </div>
+  <div class="cv-r a zoom" style="--d:3">
+    <div class="browser" style="width:470px;height:470px">
+      <div class="bb"><i></i><i></i><i></i><div class="url">내아이디.github.io/my-portfolio</div></div>
+      <div class="pg">
+        <div class="bt">💬 방명록</div>
+        <div class="post"><b>포트폴리오 잘 봤어요</b><small>@classmate · 방금 전</small></div>
+        <div class="post"><b>작업물 3번 멋짐</b><small>@friend · 1분 전</small></div>
+      </div>
+    </div>
+    <div class="pipe"><i style="--t:0s"></i><i style="--t:.5s"></i><i style="--t:1s"></i><i style="--t:1.5s"></i></div>
+    <svg class="db" viewBox="0 0 120 140" width="150" height="175"><use href="#db"/></svg>
+  </div>
+</section>
+
+<section class="slide" data-sec="시작" data-title="전체 흐름">
+  <div class="hd a"><span class="badge me">전체 흐름</span></div>
+  <h2 class="a" style="--d:1">오늘은 <em>네 단계</em>로 감</h2>
+  <div class="rd">
+    <div class="rdh a" style="--d:2"><span class="day">실습</span> 방명록 추가</div>
+    <div class="road">
+      <div class="node a pop" style="--d:3"><div class="dot">1</div><b>깃허브에서 켜기</b><small>🖱 직접</small></div>
+      <div class="node a pop" style="--d:5"><div class="dot">2</div><b>설정값 받기</b><small>🖱 직접</small></div>
+      <div class="node a pop" style="--d:7"><div class="dot">3</div><b>에이전트에게 지시</b><small>💬 에이전트</small></div>
+      <div class="node a pop" style="--d:9"><div class="dot">4</div><b>배포하고 남겨보기</b><small>💬🖱 둘 다</small></div>
+    </div>
+  </div>
+  <div class="call tip a" style="--d:11;margin-top:auto"><span class="ic">🔗</span><div>앞 실습 <b>포트폴리오 제작·배포</b>의 <code>my-portfolio</code> 저장소, <code>CLAUDE.md</code>, <code>요구사항.md</code>를 그대로 씀</div></div>
+</section>
+
+<section class="slide" data-sec="시작" data-title="왜 giscus인가">
+  <div class="hd a"><span class="badge me">무엇으로 만드나</span></div>
+  <h2 class="a" style="--d:1">글은 <em>Discussions</em>에 저장함</h2>
+  <div class="body" style="gap:36px">
+    <div class="card g1 a left col" style="--d:2;justify-content:space-between">
+      <div><h3>깃허브 페이지만 있을 때</h3><p class="md dim" style="margin-top:6px">정적 사이트*</p></div>
+      <ul class="ls sm"><li>미리 만든 파일만 보여줌</li><li>방문자가 쓴 글을 <b class="y">저장할 곳이 없음</b></li></ul>
+    </div>
+    <div class="card g15 a right col" style="--d:3;justify-content:space-between;border-top-color:var(--green)">
+      <div><h3 style="color:var(--green)">giscus를 붙였을 때</h3><p class="md dim" style="margin-top:6px">서버 없음 · 무료</p></div>
+      <div style="display:flex;align-items:center">
+        <div style="flex:1;display:flex;flex-direction:column;gap:30px">
+          <div style="display:flex;align-items:center"><span class="badge both" style="width:170px;text-align:center">🧑 방문자</span><div class="pipe"><i style="--t:0s"></i><i style="--t:1s"></i></div></div>
+          <div style="display:flex;align-items:center"><span class="badge both" style="width:170px;text-align:center">💬 giscus 창</span><div class="pipe"><i style="--t:.4s"></i><i style="--t:1.4s"></i></div></div>
+        </div>
+        <svg class="db" viewBox="0 0 120 140" width="150" height="175"><use href="#db"/></svg>
+      </div>
+      <ul class="ls sm"><li>글은 <b class="g">내 저장소 Discussions 탭</b>에 쌓임</li><li>쓰기는 깃허브 로그인 필요, 읽기는 누구나</li></ul>
+    </div>
+  </div>
+  <p class="md dim a" style="--d:6;margin-top:auto">* 정적 사이트 : 미리 만든 파일만 보여주는 사이트 · utterances는 Issues에 저장하는 비슷한 도구인데, 방명록이 버그 신고와 섞여서 오늘은 안 씀</p>
+</section>
+
+<section class="slide" data-sec="시작" data-title="준비 조건 3가지">
+  <div class="hd a"><span class="badge me">준비 조건</span></div>
+  <h2 class="a" style="--d:1">세 가지가 <em>모두</em> 필요함 <span class="dim" style="font-size:36px">(눌러서 체크)</span></h2>
+  <div class="body" style="gap:40px">
+    <div class="col g15" style="gap:12px">
+      <div class="chk a" style="--d:2"><span class="bx">✓</span>저장소가 Public<small>아니면 방문자가 글을 못 봄</small></div>
+      <div class="chk a" style="--d:3"><span class="bx">✓</span>giscus 앱 설치<small>아니면 글과 반응을 못 남김</small></div>
+      <div class="chk a" style="--d:4"><span class="bx">✓</span>Discussions 켜짐<small>아니면 창이 아예 안 뜸</small></div>
+    </div>
+    <div class="col g1 mid">
+      <div class="call warn a" style="--d:6"><span class="ic">🖱</span><div><b>셋 다 깃허브 설정 화면</b>에서 하는 일<br>에이전트가 못 건드리므로 직접 함</div></div>
+    </div>
+  </div>
+  <p class="src">출처: giscus 공식 사이트 (https://giscus.app/ko)</p>
+</section>
+
+<section class="slide divider" data-sec="1. 깃허브에서 켜기" data-title="1단계 시작">
+  <div class="dv-big a" style="--d:0">1</div>
+  <h2 class="a" style="--d:2">깃허브에서 <em>켜기</em></h2>
+  <p class="lead dim a" style="--d:3">Discussions 켜기 · 카테고리 만들기 · giscus 앱 설치</p>
+</section>
+
+<section class="slide" data-sec="1. 깃허브에서 켜기" data-title="Discussions와 카테고리">
+  <div class="hd a"><span class="stepno">1-1 · 1-2</span><span class="badge me">🖱 내가 직접</span></div>
+  <h2 class="a" style="--d:1">Discussions 켜고 <em>방명록 칸</em> 만들기</h2>
+  <div class="body">
+    <div class="col g15" style="gap:22px">
+      <ol class="ls sm a" style="--d:2">
+        <li><b>Settings → General → Features</b> 에서 <code>Discussions</code> 체크</li>
+        <li><b>Discussions</b> 탭 → 카테고리 옆 연필 → <b>New category</b></li>
+      </ol>
+      <table class="tbl a" style="--d:3">
+        <tr><th>항목</th><th>값</th></tr>
+        <tr><td>Category name</td><td><code>방명록</code></td></tr>
+        <tr><td>Discussion Format</td><td><code>Announcement</code></td></tr>
+      </table>
+    </div>
+    <div class="col g1 mid">
+      <div class="call tip a" style="--d:5"><span class="ic">📌</span><div><b>왜 Announcement 형식인가</b><br>저장소 주인과 giscus만 새 글타래를 만듦. 방문자는 그 안에 댓글만 달아서 방명록이 한 곳에 모임. giscus도 이 형식을 권장함</div></div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-sec="1. 깃허브에서 켜기" data-title="giscus 앱 설치">
+  <div class="hd a"><span class="stepno">1-3</span><span class="badge me">🖱 내가 직접</span></div>
+  <h2 class="a" style="--d:1">giscus 앱 <em>설치</em></h2>
+  <div class="body">
+    <div class="col g1" style="gap:22px;justify-content:center">
+      <ol class="ls a" style="--d:2">
+        <li><code>github.com/apps/giscus</code> 접속</li>
+        <li><b>Install</b></li>
+        <li><b>Only select repositories</b></li>
+        <li><code>my-portfolio</code> 선택</li>
+      </ol>
+    </div>
+    <div class="col g1 mid">
+      <div class="call bad a" style="--d:5"><span class="ic">🚫</span><div><b>All repositories 선택 금지</b><br>전체를 고르면 giscus가 모든 저장소 권한을 받음. 방명록이 필요한 저장소에만 줌</div></div>
+    </div>
+  </div>
+  <div class="goal a" style="--d:7"><span class="lb">여기까지 하면</span>저장소 상단에 <b>Discussions</b> 탭이 있고, 안에 <code>방명록</code> 카테고리가 보임</div>
+</section>
+
+<section class="slide divider" data-sec="2. 설정값 받기" data-title="2단계 시작">
+  <div class="dv-big a" style="--d:0">2</div>
+  <h2 class="a" style="--d:2">설정값 <em>받기</em></h2>
+  <p class="lead dim a" style="--d:3">giscus.app/ko 에서 칸을 채우면 script 코드가 나옴</p>
+</section>
+
+<section class="slide" data-sec="2. 설정값 받기" data-title="giscus.app 칸 채우기">
+  <div class="hd a"><span class="stepno">2</span><span class="badge me">🖱 내가 직접</span><span class="badge both">giscus.app/ko</span></div>
+  <h2 class="a sm" style="--d:1">위에서부터 <em>칸 채우기</em></h2>
+  <table class="tbl a" style="--d:2;font-size:29px">
+    <tr><th>칸</th><th>입력</th></tr>
+    <tr><td>언어</td><td>한국어</td></tr>
+    <tr><td>저장소</td><td><code>내아이디/my-portfolio</code> → "성공! 이 저장소는 모든 조건을 만족합니다"가 떠야 함</td></tr>
+    <tr><td>페이지 ↔ Discussion 연결</td><td><b>Discussion 제목이 특정 단어를 포함</b> → 단어 <code>방명록</code></td></tr>
+    <tr><td>카테고리</td><td><code>방명록</code></td></tr>
+    <tr><td>테마</td><td>포트폴리오 색에 맞게. 모르면 <code>preferred_color_scheme</code>*</td></tr>
+  </table>
+  <p class="md dim a" style="--d:4;margin-top:auto">* 방문자 컴퓨터의 밝은/어두운 설정을 따르는 테마</p>
+  <div class="goal a" style="--d:5"><span class="lb">여기까지 하면</span>맨 아래 <b>giscus 사용</b> 칸에 생긴 <code>&lt;script&gt;</code> 코드를 통째로 복사해 둠</div>
+</section>
+
+<section class="slide" data-sec="2. 설정값 받기" data-title="script 코드">
+  <div class="hd a"><span class="stepno">2</span><span class="badge me">🖱 내가 직접</span></div>
+  <h2 class="a" style="--d:1">복사할 <em>script</em> 코드</h2>
+  <div class="body">
+    <div class="code g15 a left" style="--d:2"><div class="tb"><i></i><i></i><i></i><span>giscus.app 이 만들어 준 코드</span></div><pre style="font-size:24px;line-height:1.5">&lt;<span class="kw">script</span> src=<span class="st">"https://giscus.app/client.js"</span>
+  data-repo=<span class="st">"내아이디/my-portfolio"</span>
+  data-repo-id=<span class="st">"R_xxxxxxxx"</span>
+  data-category=<span class="st">"방명록"</span>
+  data-category-id=<span class="st">"DIC_xxxxxxxx"</span>
+  data-mapping=<span class="st">"specific"</span>
+  data-term=<span class="st">"방명록"</span>
+  data-lang=<span class="st">"ko"</span>
+<span class="cmt">  ...</span>&gt;
+&lt;/<span class="kw">script</span>&gt;</pre></div>
+    <div class="col g1" style="gap:16px;justify-content:center">
+      <div class="call tip a" style="--d:4;font-size:26px"><span class="ic">🏷</span><div><b>왜 "특정 단어"로 연결하나</b><br>페이지가 하나라 어떤 방식이든 글타래는 하나임. 제목이 <code>방명록</code>이면 Discussions 탭에서 바로 찾고, 주소가 바뀌어도 글이 이어짐</div></div>
+      <div class="call ok a" style="--d:5;font-size:26px"><span class="ic">🔓</span><div><b>repo-id는 비밀번호가 아님</b><br>공개돼도 되는 값. 화면 HTML에 그대로 들어감</div></div>
+    </div>
+  </div>
+</section>
+
+<section class="slide divider" data-sec="3. 에이전트에게 지시" data-title="3단계 시작">
+  <div class="dv-big a" style="--d:0">3</div>
+  <h2 class="a" style="--d:2">에이전트에게 <em>지시</em></h2>
+  <p class="lead dim a" style="--d:3">요구사항 추가 → 컴포넌트 만들기 → 값 대조</p>
+</section>
+
+<section class="slide" data-sec="3. 에이전트에게 지시" data-title="왜 프롬프트를 이렇게 쓰나">
+  <div class="hd a"><span class="badge me">프롬프트 읽는 법</span></div>
+  <h2 class="a" style="--d:1">프롬프트가 <em>왜</em> 이렇게 생겼나</h2>
+  <p class="lead a" style="--d:2">줄마다 <b class="y">에이전트가 자주 틀리는 부분을 미리 막으려고</b> 넣은 것임</p>
+  <div class="cards5" style="grid-template-columns:repeat(4,1fr)">
+    <div class="tc a pop" style="--d:3"><div class="em">🎯</div><h3>범위를 하나로</h3><p>안 정하면 파일 여러 개를 한꺼번에 만들기 쉬움</p></div>
+    <div class="tc a pop" style="--d:4"><div class="em">📄</div><h3>근거 파일을 가리킴</h3><p>안 가리키면 내용을 <b>새로 지어냄</b></p></div>
+    <div class="tc a pop" style="--d:5"><div class="em">🚧</div><h3>하지 말 것을 명시</h3><p>안 적으면 라이브러리나 스타일을 마음대로 추가함</p></div>
+    <div class="tc a pop" style="--d:6"><div class="em">🔍</div><h3>확인 방법을 정함</h3><p>안 정하면 뭘 바꿨는지 알기 어려움</p></div>
+  </div>
+  <p class="md dim a" style="--d:8;margin-top:auto">포트폴리오 실습 4단계 "좋은 지시의 조건 4가지"를 그대로 적용함</p>
+</section>
+
+<section class="slide" data-sec="3. 에이전트에게 지시" data-title="요구사항 추가 프롬프트">
+  <div class="hd a"><span class="stepno">3-1</span><span class="badge agent">💬 에이전트에게</span></div>
+  <h2 class="a" style="--d:1">요구사항부터 <em>추가</em></h2>
+  <div class="body">
+    <div class="col g1" style="gap:18px;justify-content:center">
+      <p class="lead a" style="--d:2">코드보다 <b class="y">요구사항.md</b>를 먼저 고침</p>
+      <ul class="ls sm a" style="--d:3"><li>다음 지시를 한 줄로 끝내기 위함</li><li>말로만 하면 다음 대화에서 잊음</li></ul>
+    </div>
+    <div class="term g15 a right" style="--d:3"><div class="tb"><i></i><i></i><i></i><span>claude</span></div><pre class="type">요구사항.md에 방명록 섹션을 추가하자.
+- 위치: 연락처 섹션 아래
+- 방문자가 깃허브 계정으로 글을
+  남기는 방식 (giscus)
+- 제목은 "방명록", 한 줄 안내 문구 포함
+부족한 내용은 나에게 물어보면서 채워줘</pre></div>
+  </div>
+  <div class="goal a" style="--d:6"><span class="lb">여기까지 하면</span><code>요구사항.md</code>에 방명록 항목이 생겨 있음</div>
+</section>
+
+<section class="slide" data-sec="3. 에이전트에게 지시" data-title="요구사항 프롬프트 · 줄별 이유">
+  <div class="hd a"><span class="stepno">3-1</span><span class="badge me">왜 넣었나</span><span class="dim" style="font-size:26px">→ 키로 하나씩 보기</span></div>
+  <h2 class="a sm" style="--d:1">요구사항 프롬프트 <em>줄별 이유</em></h2>
+  <div class="th3 a" style="--d:2;grid-template-columns:1fr 2fr"><span>줄</span><span>왜 넣었나</span></div>
+  <div class="tr3 f" style="grid-template-columns:1fr 2fr"><span class="sy">위치: 연락처 아래</span><span>위치를 안 알려주면 맨 위나 엉뚱한 자리에 넣기 쉬움</span></div>
+  <div class="tr3 f" style="grid-template-columns:1fr 2fr"><span class="sy">방식 (giscus)</span><span>방식을 안 정하면 Supabase 같은 DB를 붙이자고 먼저 제안하는 경우가 있음. 오늘은 giscus로 정했으니 처음부터 적어 둠</span></div>
+  <div class="tr3 f" style="grid-template-columns:1fr 2fr"><span class="sy">제목, 안내 문구</span><span>화면에 나올 글자를 미리 정해 두면 결과가 맞게 나왔는지 바로 비교할 수 있음</span></div>
+  <div class="tr3 f" style="grid-template-columns:1fr 2fr"><span class="sy">물어보면서 채워줘</span><span>빈칸을 에이전트가 알아서 채우면 지어낸 문구가 들어감. 모르는 건 나한테 묻게 해 둠</span></div>
+</section>
+
+<section class="slide" data-sec="3. 에이전트에게 지시" data-title="컴포넌트 프롬프트">
+  <div class="hd a"><span class="stepno">3-2</span><span class="badge agent">💬 에이전트에게</span></div>
+  <h2 class="a" style="--d:1">Guestbook 컴포넌트 <em>만들기</em></h2>
+  <div class="body">
+    <div class="col g1" style="gap:18px;justify-content:center">
+      <p class="lead a" style="--d:2"><code>@giscus/react</code> 를 씀</p>
+      <ul class="ls sm a" style="--d:3"><li>giscus가 직접 만든 리액트용 포장 도구</li><li><code>&lt;script&gt;</code> 를 리액트 화면에 그냥 넣으면 동작하지 않거나 두 번 뜨는 경우가 있음</li></ul>
+      <p class="src a" style="--d:4;margin-top:0">출처: giscus-component (https://github.com/giscus/giscus-component)</p>
+    </div>
+    <div class="term g15 a right" style="--d:3"><div class="tb"><i></i><i></i><i></i><span>claude</span></div><pre class="type" style="font-size:24px">요구사항.md의 방명록 항목으로
+Guestbook 컴포넌트를 만들어줘.
+
+- @giscus/react 패키지 설치를 허락함.
+  설치 전에 왜 필요한지 한 줄로 알려줘
+- 설정값은 아래 script 태그의
+  data- 속성을 그대로 옮길 것
+- App.tsx에서 Contact 아래에 배치
+- 스타일은 App.css에 기존 섹션과 같은 규칙으로
+- 끝나면 바꾼 파일과 이유를 알려줘
+
+(2단계에서 복사한 script 코드 붙여넣기)</pre></div>
+  </div>
+</section>
+
+<section class="slide" data-sec="3. 에이전트에게 지시" data-title="컴포넌트 프롬프트 · 줄별 이유 1">
+  <div class="hd a"><span class="stepno">3-2</span><span class="badge me">왜 넣었나 ①</span><span class="dim" style="font-size:26px">→ 키로 하나씩 보기</span></div>
+  <h2 class="a sm" style="--d:1">컴포넌트 프롬프트 <em>줄별 이유</em></h2>
+  <div class="th3 a" style="--d:2;grid-template-columns:1fr 2fr .55fr"><span>줄</span><span>왜 넣었나</span><span>조건</span></div>
+  <div class="tr3 f" style="grid-template-columns:1fr 2fr .55fr"><span class="sy">요구사항.md의 방명록 항목으로</span><span>제목과 안내 문구를 요구사항 파일에서 가져오게 함. 안 적으면 문구를 새로 지어냄</span><span class="fx">근거 파일</span></div>
+  <div class="tr3 f" style="grid-template-columns:1fr 2fr .55fr"><span class="sy">Guestbook 컴포넌트를</span><span>이번에 만들 것을 하나로 정해 둠. 그래야 다른 섹션을 같이 고치지 않음</span><span class="fx">범위 하나</span></div>
+  <div class="tr3 f" style="grid-template-columns:1fr 2fr .55fr"><span class="sy">설치를 허락함 + 이유 한 줄</span><span><code>CLAUDE.md</code> 규칙 때문에 허락을 안 해두면 설치 전에 멈추고 물어봄. 이유는 엉뚱한 패키지를 까는지 확인하려고 들음</span><span class="fx">하지 말 것</span></div>
+  <div class="tr3 f" style="grid-template-columns:1fr 2fr .55fr"><span class="sy">data- 속성을 그대로</span><span>저장소 ID는 에이전트가 알 방법이 없음. "그대로"라고 못 박지 않으면 예시 값이나 가짜 값을 넣는 경우가 있음</span><span class="fx">근거 파일</span></div>
+</section>
+
+<section class="slide" data-sec="3. 에이전트에게 지시" data-title="컴포넌트 프롬프트 · 줄별 이유 2">
+  <div class="hd a"><span class="stepno">3-2</span><span class="badge me">왜 넣었나 ②</span><span class="dim" style="font-size:26px">→ 키로 하나씩 보기</span></div>
+  <h2 class="a sm" style="--d:1">컴포넌트 프롬프트 <em>줄별 이유</em></h2>
+  <div class="th3 a" style="--d:2;grid-template-columns:1fr 2fr .55fr"><span>줄</span><span>왜 넣었나</span><span>조건</span></div>
+  <div class="tr3 f" style="grid-template-columns:1fr 2fr .55fr"><span class="sy">Contact 아래에 배치</span><span>화면에 붙이는 것까지 시킴. 이 줄이 없으면 파일만 생기고 화면에는 안 나올 수 있음</span><span class="fx">범위 하나</span></div>
+  <div class="tr3 f" style="grid-template-columns:1fr 2fr .55fr"><span class="sy">기존 섹션과 같은 규칙으로</span><span>이 말이 없으면 새 색과 여백을 정해서 방명록만 따로 노는 모양이 되기 쉬움</span><span class="fx">하지 말 것</span></div>
+  <div class="tr3 f" style="grid-template-columns:1fr 2fr .55fr"><span class="sy">바꾼 파일과 이유를 알려줘</span><span>시키지 않은 파일까지 고쳤는지 바로 알 수 있음. 포트폴리오 7단계 확인 습관과 같음</span><span class="fx">확인 방법</span></div>
+  <div class="tr3 f" style="grid-template-columns:1fr 2fr .55fr"><span class="sy">script 코드 붙여넣기</span><span>설정값은 이 코드에만 있음. 붙여넣지 않으면 에이전트는 값을 구할 곳이 없음</span><span class="fx">근거 파일</span></div>
+  <div class="call tip a" style="--d:3;margin-top:auto;font-size:27px"><span class="ic">🧪</span><div><b>직접 비교해 보기</b> · 한 줄을 지우고 다시 시켜 본 뒤 원래 결과와 나란히 놓고 보면 그 줄이 하는 일이 보임. 예 : <b>기존 섹션과 같은 규칙으로</b></div></div>
+</section>
+
+<section class="slide" data-sec="3. 에이전트에게 지시" data-title="결과 값 대조">
+  <div class="hd a"><span class="stepno">3-3</span><span class="badge me">👀 확인</span></div>
+  <h2 class="a" style="--d:1">값이 같은지 <em>눈으로 대조</em></h2>
+  <div class="body">
+    <div class="code g1 a left" style="--d:2"><div class="tb"><i></i><i></i><i></i><span>src/components/Guestbook.tsx (대략)</span></div><pre style="font-size:24px;line-height:1.45">&lt;<span class="fn">Giscus</span>
+  repo=<span class="st">"내아이디/my-portfolio"</span>
+  repoId=<span class="st">"R_xxxxxxxx"</span>
+  category=<span class="st">"방명록"</span>
+  categoryId=<span class="st">"DIC_xxxxxxxx"</span>
+  mapping=<span class="st">"specific"</span>
+  term=<span class="st">"방명록"</span>
+  theme=<span class="st">"preferred_color_scheme"</span>
+  lang=<span class="st">"ko"</span>
+<span class="cmt">  ...</span>
+/&gt;</pre></div>
+    <div class="col g1" style="gap:18px;justify-content:center">
+      <table class="tbl a" style="--d:3;font-size:28px">
+        <tr><th>리액트</th><th>script</th></tr>
+        <tr><td><code>repo</code></td><td><code>data-repo</code></td></tr>
+        <tr><td><code>repoId</code></td><td><code>data-repo-id</code></td></tr>
+        <tr><td><code>categoryId</code></td><td><code>data-category-id</code></td></tr>
+        <tr><td><code>term</code></td><td><code>data-term</code></td></tr>
+      </table>
+      <p class="md dim a" style="--d:4"><code>data-이름-이름</code> → <code>이름이름</code> (뒤 단어 첫 글자만 대문자)</p>
+    </div>
+  </div>
+  <div class="goal a" style="--d:6"><span class="lb">여기까지 하면</span><code>localhost:5173</code> 연락처 아래에 "GitHub로 로그인" 버튼이 있는 창이 보임</div>
+</section>
+
+<section class="slide" data-sec="3. 에이전트에게 지시" data-title="안 되면 의심할 것">
+  <div class="hd a"><span class="badge me">안 되면 의심할 것</span><span class="dim" style="font-size:26px">→ 키로 하나씩 보기</span></div>
+  <h2 class="a sm" style="--d:1">창이 안 뜰 때 <em>의심할 것</em></h2>
+  <div class="th3 a" style="--d:2"><span>증상</span><span>원인</span><span>해결</span></div>
+  <div class="tr3 f"><span class="sy">창 자리가 비어 있음</span><span><code>App.tsx</code>에서 안 불러옴</span><span class="fx">"방명록이 화면에 안 나와. App.tsx 확인해줘"</span></div>
+  <div class="tr3 f"><span class="sy"><code>giscus is not installed on this repository</code></span><span>1-3에서 저장소를 안 고름</span><span class="fx">앱 설정에서 <code>my-portfolio</code> 추가</span></div>
+  <div class="tr3 f"><span class="sy">카테고리를 못 찾는다는 문구</span><span><code>categoryId</code>를 잘못 옮김</span><span class="fx">2단계에서 다시 복사해 넘김</span></div>
+  <div class="tr3 f"><span class="sy">저장소 이름 오류</span><span><code>repo</code>에 <code>https://github.com/</code>까지 넣음</span><span class="fx"><code>내아이디/my-portfolio</code>만</span></div>
+  <p class="md dim a" style="--d:3;margin-top:auto">오류 문구는 giscus 버전에 따라 다를 수 있음. 화면에 뜬 문구를 그대로 에이전트에게 전달하면 됨</p>
+</section>
+
+<section class="slide divider" data-sec="4. 배포하고 남겨보기" data-title="4단계 시작">
+  <div class="dv-big a" style="--d:0">4</div>
+  <h2 class="a" style="--d:2">배포하고 <em>남겨보기</em></h2>
+  <p class="lead dim a" style="--d:3">푸시 → 배포 주소에서 첫 글 → Discussions 확인</p>
+</section>
+
+<section class="slide" data-sec="4. 배포하고 남겨보기" data-title="푸시하고 기다리기">
+  <div class="hd a"><span class="stepno">4</span><span class="badge both">💬🖱 둘 다</span></div>
+  <h2 class="a" style="--d:1">푸시하고 <em>기다리기</em></h2>
+  <div class="term a" style="--d:2"><div class="tb"><i></i><i></i><i></i><span>터미널</span></div><pre class="type" style="font-size:25px">git add .
+git commit -m "방명록 추가"
+git push</pre></div>
+  <p class="md dim a" style="--d:3;margin:22px 0 14px">방법 A(Actions) → 푸시만 하면 됨 · 방법 B(<code>gh-pages</code>) → <code>npm run deploy</code> 도 실행</p>
+  <div class="pl">
+    <div class="stg" style="--k:0"><span class="tick">✓</span><span class="ic">📤</span>Push<small>main</small></div><span class="arr">›</span>
+    <div class="stg" style="--k:1"><span class="tick">✓</span><span class="ic">📦</span>Build<small>Actions</small></div><span class="arr">›</span>
+    <div class="stg" style="--k:2"><span class="tick">✓</span><span class="ic">🚀</span>Deploy<small>Pages</small></div><span class="arr">›</span>
+    <div class="stg" style="--k:3"><span class="tick">✓</span><span class="ic">💬</span>첫 글<small>로그인 후 작성</small></div>
+  </div>
+  <div class="goal a" style="--d:8"><span class="lb">여기까지 하면</span>저장소 <b>Discussions → 방명록</b>에 제목이 <code>방명록</code>인 글타래와 내 글이 있음</div>
+</section>
+
+<section class="slide" data-sec="4. 배포하고 남겨보기" data-title="관리와 미니 실습">
+  <div class="hd a"><span class="badge me">관리</span></div>
+  <h2 class="a" style="--d:1">방명록 <em>관리</em>하기</h2>
+  <div class="body">
+    <div class="col g15">
+      <table class="tbl a" style="--d:2;font-size:29px">
+        <tr><th>하고 싶은 것</th><th>방법</th></tr>
+        <tr><td>스팸 글 지우기</td><td>글타래에서 해당 댓글 <code>...</code> → Delete</td></tr>
+        <tr><td>특정 사용자 막기</td><td>Settings → Moderation options → Interaction limits, 또는 차단</td></tr>
+        <tr><td>방명록 잠시 닫기</td><td>글타래 오른쪽 <b>Lock conversation</b></td></tr>
+      </table>
+    </div>
+    <div class="col g1 mid">
+      <div class="call tip a" style="--d:4"><span class="ic">🤝</span><div><b>미니 실습</b><br>옆자리 수강생 포트폴리오에 서로 방명록 남기기</div></div>
+    </div>
+  </div>
+</section>
+
+<section class="slide divider" data-sec="자주 나오는 질문" data-title="giscus와 Supabase">
+  <div class="dv-big a" style="--d:0">Q</div>
+  <h2 class="a" style="--d:2">Supabase로 하면 <em>안 되나요?</em></h2>
+  <p class="lead dim a" style="--d:3">지난 블로그 수업에서 쓴 Supabase와 오늘 giscus 비교</p>
+</section>
+
+<section class="slide" data-sec="자주 나오는 질문" data-title="무엇이 다른가">
+  <div class="hd a"><span class="badge me">비교</span></div>
+  <h2 class="a sm" style="--d:1">댓글 창과 <em>데이터베이스</em>의 차이</h2>
+  <table class="tbl a" style="--d:2;font-size:27px">
+    <tr><th></th><th>giscus</th><th>Supabase</th></tr>
+    <tr><td><b>정체</b></td><td>Discussions를 <b>댓글 창</b>으로 보여줌</td><td>표를 마음대로 만드는 <b>데이터베이스</b></td></tr>
+    <tr><td><b>저장 모양</b></td><td>정해져 있음 (글쓴이, 본문, 반응)</td><td>내가 정함 (이름, 별점, 사진 주소 등)</td></tr>
+    <tr><td><b>글 쓰는 사람</b></td><td>깃허브 계정이 있는 사람만</td><td>로그인 없이도 가능하게 만들 수 있음</td></tr>
+    <tr><td><b>보안 설정</b></td><td>giscus 앱이 처리함</td><td>RLS* 정책을 직접 정함</td></tr>
+    <tr><td><b>스팸 관리</b></td><td>깃허브의 삭제·차단·잠금</td><td>직접 만들어야 함</td></tr>
+    <tr><td><b>무료 조건</b></td><td>공개 저장소면 무료</td><td>활성 프로젝트 2개까지, 1주일 안 쓰면 일시 정지</td></tr>
+  </table>
+  <p class="md dim a" style="--d:4;margin-top:auto">* RLS : 표의 줄마다 누가 읽고 쓸 수 있는지 정하는 규칙. 블로그 수업에서 설정했던 그것</p>
+  <p class="src">출처: giscus 공식 사이트 (https://giscus.app/ko) · Supabase 요금제 (https://supabase.com/pricing)</p>
+</section>
+
+<section class="slide" data-sec="자주 나오는 질문" data-title="두 질문에 대한 답">
+  <div class="hd a"><span class="badge me">학생 질문</span></div>
+  <h2 class="a sm" style="--d:1">바꿔 써도 <em>되나요?</em></h2>
+  <div class="body" style="gap:36px">
+    <div class="card g1 a left col" style="--d:2;border-top:8px solid var(--green);gap:14px">
+      <h3 style="color:var(--green)">방명록을 Supabase로? → 됨</h3>
+      <p class="md">깃허브 계정 없는 사람도 쓰게 하거나, 칸을 직접 정하고 싶으면 Supabase가 맞음. 블로그 수업 흐름을 그대로 반복하면 됨</p>
+      <ul class="ls sm"><li>누구나 쓰게 열면 <b class="y">스팸도 같이 들어옴</b></li><li>1주일 안 쓰면 <b class="y">일시 정지</b>됨</li><li>무료 프로젝트 2개를 이미 쓰고 있으면 새로 못 만듦</li></ul>
+    </div>
+    <div class="card g1 a right col" style="--d:3;border-top:8px solid var(--acc);gap:14px">
+      <h3 style="color:var(--acc)">블로그를 giscus로? → 안 됨</h3>
+      <p class="md">giscus는 이미 있는 페이지에 <b>댓글을 다는 도구</b>임. 글 쓰기, 목록, 상세 화면은 만들 수 없음</p>
+      <div class="call ok" style="font-size:26px"><span class="ic">🤝</span><div>본문은 Supabase에 두고, <b>글 아래 댓글을 giscus로</b> 다는 건 가능함</div></div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-sec="자주 나오는 질문" data-title="고르는 기준">
+  <div class="hd a"><span class="badge agent">💬 헷갈리면 에이전트에게</span></div>
+  <h2 class="a sm" style="--d:1">어느 쪽을 <em>고르나</em></h2>
+  <div class="body">
+    <div class="col g1">
+      <table class="tbl a" style="--d:2;font-size:27px">
+        <tr><th>이런 경우</th><th>고를 것</th></tr>
+        <tr><td>빨리 붙이고 싶음, 보는 사람이 개발자 위주</td><td><b>giscus</b></td></tr>
+        <tr><td>깃허브 계정 없는 사람도 쓰게 하고 싶음</td><td><b>Supabase</b></td></tr>
+        <tr><td>이름·별점·사진 같은 칸을 정하고 싶음</td><td><b>Supabase</b></td></tr>
+        <tr><td>블로그 글마다 댓글</td><td><b>giscus</b></td></tr>
+      </table>
+    </div>
+    <div class="col g1" style="gap:14px">
+      <div class="term a right" style="--d:3"><div class="tb"><i></i><i></i><i></i><span>claude</span></div><pre class="type" style="font-size:23px">포트폴리오에 방명록을 붙이려고 해.
+giscus와 Supabase 중 어느 쪽이 맞을지
+내 상황(방문자, 저장할 칸, 관리 방법)을
+하나씩 물어보고 추천해줘.
+아직 코드는 고치지 말 것</pre></div>
+      <p class="md dim a" style="--d:5">마지막 줄은 비교만 하는 단계에서 에이전트가 바로 설치부터 시작하지 않게 하려고 넣음</p>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-sec="마무리" data-title="용어">
+  <div class="hd a"><span class="badge me">오늘 쓴 용어</span></div>
+  <h2 class="a" style="--d:1">용어는 <em>5개</em></h2>
+  <div class="cards5">
+    <div class="tc a pop" style="--d:2"><div class="em">📄</div><h3>정적 사이트</h3><p>미리 만든 파일만 보여줌. 글을 저장할 곳이 없음</p></div>
+    <div class="tc a pop" style="--d:3"><div class="em">🗂</div><h3>Discussions</h3><p>깃허브 저장소의 <b>게시판</b>. 카테고리로 나눔</p></div>
+    <div class="tc a pop" style="--d:4"><div class="em">💬</div><h3>giscus</h3><p>Discussions를 내 사이트의 <b>댓글 창</b>으로 보여줌</p></div>
+    <div class="tc a pop" style="--d:5"><div class="em">🧩</div><h3>깃허브 앱</h3><p>내 저장소 권한 일부를 받아 대신 일하는 프로그램</p></div>
+    <div class="tc a pop" style="--d:6"><div class="em">🔗</div><h3>매핑</h3><p>어느 페이지를 어느 글타래와 연결할지 정하는 규칙</p></div>
+  </div>
+  <p class="src">출처: giscus 공식 사이트 (https://giscus.app/ko)</p>
+</section>
+
+<section class="slide" data-sec="마무리" data-title="마무리" data-confetti="1">
+  <div class="hd a"><span class="badge me">마무리</span></div>
+  <h2 class="a" style="--d:1">포트폴리오에 <em>방명록</em>이 생겼음</h2>
+  <div class="row" style="gap:22px;flex-wrap:wrap">
+    <div class="card a pop" style="--d:2;flex:1 1 30%;text-align:center"><div style="font-size:60px">🗂</div><p class="md">Discussions <b>방명록 칸</b></p></div>
+    <div class="card a pop" style="--d:3;flex:1 1 30%;text-align:center"><div style="font-size:60px">💬</div><p class="md">Guestbook <b>컴포넌트</b></p></div>
+    <div class="card a pop" style="--d:4;flex:1 1 30%;text-align:center"><div style="font-size:60px">🧭</div><p class="md">프롬프트 줄마다 <b>이유</b> 읽기</p></div>
+  </div>
+</section>
+
+<canvas id="cf"></canvas>
+</div><!-- /#stage -->
+
+<div id="prog"></div>
+<div id="ctr"></div>
+<div id="nav"><button id="bp" title="이전">◀</button><button id="bn" title="다음">▶</button></div>
+<button id="mbtn" title="슬라이드 목록 (g)">☰</button>
+<div id="menu"></div>
+<div id="hint">← → 이동 · g 목록 · f 전체화면 · 표는 → 키로 한 줄씩</div>
+
+<script>
+(function(){
+  var stage=document.getElementById('stage');
+  var slides=[].slice.call(stage.querySelectorAll('.slide'));
+  var N=slides.length, cur=0, fr=0;
+  var typeTimers=[];
+
+  /* ----- 화면 크기에 맞춰 1920x1080 무대를 축소 ----- */
+  function fit(){
+    var s=Math.min(window.innerWidth/1920,window.innerHeight/1080);
+    stage.style.transform='translate(-50%,-50%) scale('+s+')';
+  }
+  window.addEventListener('resize',fit); fit();
+
+  /* ----- 타자 효과 ----- */
+  slides.forEach(function(sl){
+    [].forEach.call(sl.querySelectorAll('.type'),function(el){
+      el.dataset.full=el.textContent;
+      el.innerHTML='<span class="t1"></span><span class="t2" style="visibility:hidden"></span>';
+      el.querySelector('.t2').textContent=el.dataset.full;
+    });
+  });
+  function setTyped(el,n){
+    var full=el.dataset.full;
+    el.querySelector('.t1').textContent=full.slice(0,n);
+    el.querySelector('.t2').textContent=full.slice(n);
+  }
+  function stopTypers(){typeTimers.forEach(function(t){clearTimeout(t);clearInterval(t)});typeTimers=[]}
+  function startTypers(sl){
+    [].forEach.call(sl.querySelectorAll('.type'),function(el){
+      setTyped(el,0); el.classList.remove('fin');
+      var delay=parseInt(el.dataset.delay||'900',10), n=0, full=el.dataset.full;
+      var t=setTimeout(function(){
+        var iv=setInterval(function(){
+          n+=3; if(n>=full.length){n=full.length;clearInterval(iv);el.classList.add('fin')}
+          setTyped(el,n);
+        },24);
+        typeTimers.push(iv);
+      },delay);
+      typeTimers.push(t);
+    });
+  }
+  function finishTypers(sl){
+    [].forEach.call(sl.querySelectorAll('.type'),function(el){setTyped(el,el.dataset.full.length);el.classList.add('fin')});
+  }
+
+  /* ----- 이동 ----- */
+  function frags(i){return [].slice.call(slides[i].querySelectorAll('.f'))}
+  function go(i,opt){
+    opt=opt||{};
+    i=Math.max(0,Math.min(N-1,i)); cur=i;
+    slides.forEach(function(s,k){
+      s.classList.toggle('on',k===i);
+      s.classList.toggle('before',k<i);
+      s.classList.toggle('after',k>i);
+    });
+    var fs=frags(i);
+    fs.forEach(function(f){f.classList.remove('show')}); fr=0;
+    if(opt.end){fs.forEach(function(f){f.classList.add('show')});fr=fs.length}
+    stopTypers();
+    if(opt.end) finishTypers(slides[i]); else startTypers(slides[i]);
+    stopConfetti();
+    if(slides[i].hasAttribute('data-confetti')) setTimeout(function(){if(cur===i)startConfetti()},700);
+    document.getElementById('prog').style.width=((i+1)/N*100)+'%';
+    document.getElementById('ctr').textContent=(i+1)+' / '+N;
+    [].forEach.call(document.querySelectorAll('#menu a'),function(a,k){a.classList.toggle('cur',k===i)});
+    try{history.replaceState(null,'','#'+(i+1))}catch(e){}
+  }
+  function next(){
+    var fs=frags(cur);
+    if(fr<fs.length){fs[fr++].classList.add('show');return}
+    if(cur<N-1) go(cur+1);
+  }
+  function prev(){
+    var fs=frags(cur);
+    if(fr>0){fs[--fr].classList.remove('show');return}
+    if(cur>0) go(cur-1,{end:true});
+  }
+
+  /* ----- 키보드 · 터치 ----- */
+  document.addEventListener('keydown',function(e){
+    if(e.ctrlKey||e.metaKey||e.altKey) return;
+    var k=e.key;
+    if(k==='ArrowRight'||k==='PageDown'||k===' '||k==='Enter'){e.preventDefault();next()}
+    else if(k==='ArrowLeft'||k==='PageUp'||k==='Backspace'){e.preventDefault();prev()}
+    else if(k==='Home'){go(0)}
+    else if(k==='End'){go(N-1)}
+    else if(k==='g'||k==='G'||k==='m'){toggleMenu()}
+    else if(k==='Escape'){document.getElementById('menu').classList.remove('open')}
+    else if(k==='f'||k==='F'){
+      if(!document.fullscreenElement){document.documentElement.requestFullscreen&&document.documentElement.requestFullscreen()}
+      else{document.exitFullscreen&&document.exitFullscreen()}
+    }
+  });
+  var tx=null;
+  document.addEventListener('touchstart',function(e){tx=e.touches[0].clientX},{passive:true});
+  document.addEventListener('touchend',function(e){
+    if(tx===null)return; var dx=e.changedTouches[0].clientX-tx; tx=null;
+    if(Math.abs(dx)>60){dx<0?next():prev()}
+  },{passive:true});
+  document.getElementById('bn').onclick=function(){this.blur();next()};
+  document.getElementById('bp').onclick=function(){this.blur();prev()};
+
+  /* ----- 목록 메뉴 ----- */
+  var menu=document.getElementById('menu'), last='';
+  slides.forEach(function(s,i){
+    var sec=s.dataset.sec||'';
+    if(sec!==last){var h=document.createElement('h4');h.textContent=sec;menu.appendChild(h);last=sec}
+    var a=document.createElement('a');
+    a.innerHTML='<span>'+(i+1)+'</span>'+(s.dataset.title||('슬라이드 '+(i+1)));
+    a.onclick=function(){go(i);menu.classList.remove('open')};
+    menu.appendChild(a);
+  });
+  function toggleMenu(){menu.classList.toggle('open')}
+  document.getElementById('mbtn').onclick=function(){this.blur();toggleMenu()};
+
+  /* ----- 체크리스트 · 주제 카드 ----- */
+  [].forEach.call(document.querySelectorAll('.chk:not(.tickrow)'),function(c){
+    c.onclick=function(){c.classList.toggle('is-done')};
+  });
+  var tps=[].slice.call(document.querySelectorAll('.tp'));
+  tps.forEach(function(t){
+    t.onclick=function(){
+      tps.forEach(function(x){x.classList.remove('sel')});
+      t.classList.add('sel');
+      var out=document.getElementById('topicOut'); if(out) out.textContent=t.dataset.t;
+    };
+  });
+
+  /* ----- 체험 스위치 (.demo) -----
+     .demo 안에 .sw[data-k] 스위치, .gate[data-k] 관문, .case[data-needs="a b"] 결과 블록을 둠
+     켜진 스위치에 needs 가 모두 맞는 .case 중 needs 가 가장 많은 것 하나만 보임
+     needs 가 빈 .case 는 기본(모두 꺼짐) 결과. 상태 클래스는 is-on / open / closed 를 씀 */
+  [].forEach.call(document.querySelectorAll('.demo'),function(demo){
+    var on={};
+    function draw(){
+      [].forEach.call(demo.querySelectorAll('.gate[data-k]'),function(g){
+        var o=!!on[g.dataset.k];
+        g.classList.toggle('open',o); g.classList.toggle('closed',!o);
+        var gi=g.querySelector('.gi');
+        if(gi) gi.textContent=o?(g.dataset.iconOn||'🔓'):(g.dataset.iconOff||'🔒');
+      });
+      var cases=[].slice.call(demo.querySelectorAll('.case')), best=null, bn=-1;
+      cases.forEach(function(c){
+        var needs=(c.dataset.needs||'').split(/\s+/).filter(Boolean);
+        var ok=needs.every(function(k){return on[k]});
+        if(ok&&needs.length>bn){best=c;bn=needs.length}
+      });
+      cases.forEach(function(c){c.style.display=(c===best)?'':'none'});
+    }
+    [].forEach.call(demo.querySelectorAll('.sw[data-k]'),function(b){
+      b.onclick=function(){on[b.dataset.k]=!on[b.dataset.k];b.classList.toggle('is-on',!!on[b.dataset.k]);b.blur();draw()};
+    });
+    draw();
+  });
+
+  /* ----- 색종이 ----- */
+  var cv=document.getElementById('cf'), cx=cv.getContext('2d'), parts=[], raf=null;
+  cv.width=1920; cv.height=1080;
+  function startConfetti(){
+    parts=[]; var cols=['#c93d14','#16161b','#1b7f52','#2147c9','#a96b00','#5f5e58'];
+    for(var i=0;i<260;i++){
+      parts.push({x:Math.random()*1920,y:-Math.random()*1000-20,w:10+Math.random()*14,h:16+Math.random()*16,
+        vx:(Math.random()-.5)*3,vy:2+Math.random()*5,r:Math.random()*6,vr:(Math.random()-.5)*.3,c:cols[i%cols.length]});
+    }
+    (function loop(){
+      cx.clearRect(0,0,1920,1080);
+      parts.forEach(function(p){
+        p.x+=p.vx; p.y+=p.vy; p.r+=p.vr;
+        cx.save(); cx.translate(p.x,p.y); cx.rotate(p.r); cx.fillStyle=p.c; cx.fillRect(-p.w/2,-p.h/2,p.w,p.h); cx.restore();
+      });
+      parts=parts.filter(function(p){return p.y<1120});
+      if(parts.length){raf=requestAnimationFrame(loop)}else{raf=null}
+    })();
+  }
+  function stopConfetti(){if(raf){cancelAnimationFrame(raf);raf=null}cx.clearRect(0,0,1920,1080);parts=[]}
+
+  /* ----- 시작 ----- */
+  var start=parseInt((location.hash||'').replace('#',''),10);
+  go(isNaN(start)?0:start-1);
+  setTimeout(function(){var h=document.getElementById('hint');h.style.opacity=0;setTimeout(function(){h.style.display='none'},700)},5000);
+})();
+</script>
+</body>
+</html>
