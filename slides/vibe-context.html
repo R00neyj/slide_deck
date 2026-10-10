@@ -1115,13 +1115,13 @@ docs/decisions.md 읽고 이어가줘</pre></div>
 <div id="nav"><button id="bp" title="이전">◀</button><button id="bn" title="다음">▶</button></div>
 <button id="mbtn" title="슬라이드 목록 (g)">☰</button>
 <div id="menu"></div>
-<div id="hint">← → 이동 · g 목록 · f 전체화면 · 표는 → 키로 한 줄씩</div>
+<div id="hint">← → 이동 · g 목록 · f 전체화면</div>
 
 <script>
 (function(){
   var stage=document.getElementById('stage');
   var slides=[].slice.call(stage.querySelectorAll('.slide'));
-  var N=slides.length, cur=0, fr=0;
+  var N=slides.length, cur=0, fragTimers=[];
   var typeTimers=[];
 
   /* ----- 화면 크기에 맞춰 1920x1080 무대를 축소 ----- */
@@ -1174,8 +1174,11 @@ docs/decisions.md 읽고 이어가줘</pre></div>
       s.classList.toggle('after',k>i);
     });
     var fs=frags(i);
-    fs.forEach(function(f){f.classList.remove('show')}); fr=0;
-    if(opt.end){fs.forEach(function(f){f.classList.add('show')});fr=fs.length}
+    fragTimers.forEach(clearTimeout); fragTimers=[];
+    fs.forEach(function(f){f.classList.remove('show')});
+    /* 표 줄(.f)은 키를 누르지 않아도 차례로 나타남. 뒤로 왔을 때는 바로 다 보임 */
+    if(opt.end) fs.forEach(function(f){f.classList.add('show')});
+    else fs.forEach(function(f,k){fragTimers.push(setTimeout(function(){if(cur===i)f.classList.add('show')},600+k*350))});
     stopTypers();
     if(opt.end) finishTypers(slides[i]); else startTypers(slides[i]);
     stopConfetti();
@@ -1186,13 +1189,9 @@ docs/decisions.md 읽고 이어가줘</pre></div>
     try{history.replaceState(null,'','#'+(i+1))}catch(e){}
   }
   function next(){
-    var fs=frags(cur);
-    if(fr<fs.length){fs[fr++].classList.add('show');return}
     if(cur<N-1) go(cur+1);
   }
   function prev(){
-    var fs=frags(cur);
-    if(fr>0){fs[--fr].classList.remove('show');return}
     if(cur>0) go(cur-1,{end:true});
   }
 

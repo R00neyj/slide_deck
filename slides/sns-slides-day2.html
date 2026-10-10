@@ -556,7 +556,7 @@ git log 로 최근 커밋 3개도 알려줘.
   <div class="goal a" style="--d:7"><span class="lb">여기까지 하면</span>위 4개가 모두 맞아야 다음 STEP으로 넘어감</div>
 </section>
 <section class="slide" data-sec="2일차" data-title="STEP 14 안 되면 · 체크포인트 3">
-  <div class="hd a"><span class="badge me">STEP 14 · 안 되면 의심할 것</span><span class="dim" style="font-size:26px">→ 키로 하나씩 보기</span></div>
+  <div class="hd a"><span class="badge me">STEP 14 · 안 되면 의심할 것</span></div>
   <h2 class="a sm" style="--d:1">무한 스크롤 <em>문제 해결</em> 표</h2>
   <div class="th3 a" style="--d:2"><span>증상</span><span>원인</span><span>에이전트에게 할 말</span></div>
   <div class="tr3 f" style="font-size:25px"><span class="sy">처음부터 30개가 다 나옴</span><span>감지선이 처음부터 화면 안에 있어 연달아 불러옴</span><span class="fx">처음 화면에서 감지선이 보이고 있는지 확인해줘. 카드 10개가 화면보다 짧은지도 봐줘</span></div>
@@ -699,7 +699,7 @@ Supabase 의 sns_posts 에서 가져오도록 바꿔줘.
   <p class="src" style="bottom:12px">출처: Chrome DevTools · Network (developer.chrome.com/docs/devtools/network)</p>
 </section>
 <section class="slide" data-sec="2일차" data-title="STEP 18 안 되면 · 체크포인트 4">
-  <div class="hd a"><span class="badge me">STEP 18 · 안 되면 의심할 것</span><span class="dim" style="font-size:26px">→ 키로 하나씩 보기</span></div>
+  <div class="hd a"><span class="badge me">STEP 18 · 안 되면 의심할 것</span></div>
   <h2 class="a sm" style="--d:1">DB 연결 <em>문제 해결</em> 표</h2>
   <div class="th3 a" style="--d:2"><span>증상</span><span>원인</span><span>에이전트에게 할 말</span></div>
   <div class="tr3 f" style="font-size:24px;padding:11px 22px"><span class="sy">아무것도 안 나옴 (오류 없음)</span><span><code>grant</code> 나 정책 누락</span><span class="fx">sns_posts 테이블의 RLS, 정책, anon 권한을 조회만 해줘. 아무것도 바꾸지 마</span></div>
@@ -807,13 +807,13 @@ Supabase 의 sns_posts 에서 가져오도록 바꿔줘.
 <div id="nav"><button id="bp" title="이전">◀</button><button id="bn" title="다음">▶</button></div>
 <button id="mbtn" title="슬라이드 목록 (g)">☰</button>
 <div id="menu"></div>
-<div id="hint">← → 이동 · g 목록 · f 전체화면 · 표는 → 키로 한 줄씩</div>
+<div id="hint">← → 이동 · g 목록 · f 전체화면</div>
 
 <script>
 (function(){
   var stage=document.getElementById('stage');
   var slides=[].slice.call(stage.querySelectorAll('.slide'));
-  var N=slides.length, cur=0, fr=0;
+  var N=slides.length, cur=0, fragTimers=[];
   var typeTimers=[];
 
   /* ----- 화면 크기에 맞춰 1920x1080 무대를 축소 ----- */
@@ -866,8 +866,11 @@ Supabase 의 sns_posts 에서 가져오도록 바꿔줘.
       s.classList.toggle('after',k>i);
     });
     var fs=frags(i);
-    fs.forEach(function(f){f.classList.remove('show')}); fr=0;
-    if(opt.end){fs.forEach(function(f){f.classList.add('show')});fr=fs.length}
+    fragTimers.forEach(clearTimeout); fragTimers=[];
+    fs.forEach(function(f){f.classList.remove('show')});
+    /* 표 줄(.f)은 키를 누르지 않아도 차례로 나타남. 뒤로 왔을 때는 바로 다 보임 */
+    if(opt.end) fs.forEach(function(f){f.classList.add('show')});
+    else fs.forEach(function(f,k){fragTimers.push(setTimeout(function(){if(cur===i)f.classList.add('show')},600+k*350))});
     stopTypers();
     if(opt.end) finishTypers(slides[i]); else startTypers(slides[i]);
     stopConfetti();
@@ -878,13 +881,9 @@ Supabase 의 sns_posts 에서 가져오도록 바꿔줘.
     try{history.replaceState(null,'','#'+(i+1))}catch(e){}
   }
   function next(){
-    var fs=frags(cur);
-    if(fr<fs.length){fs[fr++].classList.add('show');return}
     if(cur<N-1) go(cur+1);
   }
   function prev(){
-    var fs=frags(cur);
-    if(fr>0){fs[--fr].classList.remove('show');return}
     if(cur>0) go(cur-1,{end:true});
   }
 

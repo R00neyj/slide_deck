@@ -1033,7 +1033,7 @@ posts 테이블에서 가져오게 바꿔줘.
   <div class="goal a" style="--d:6"><span class="lb">1일차 완성</span>내가 대시보드에서 넣은 글이 블로그 화면에 나타남</div>
 </section>
 <section class="slide" data-sec="1일차" data-title="안 되면 의심할 것 (1일차)">
-  <div class="hd a"><span class="badge me">STEP 13 · 안 되면 의심할 것</span><span class="dim" style="font-size:26px">→ 키로 하나씩 보기</span></div>
+  <div class="hd a"><span class="badge me">STEP 13 · 안 되면 의심할 것</span></div>
   <h2 class="a sm" style="--d:1">1일차 <em>문제 해결</em> 표</h2>
   <div class="th3 a" style="--d:2"><span>증상</span><span>원인</span><span>해결</span></div>
   <div class="tr3 f"><span class="sy">목록이 비어 있음 (오류 없음)</span><span>정책 없음 또는 <code>grant</code> 누락</span><span class="fx">STEP 10 SQL 확인 · 부록 A 진단 프롬프트</span></div>
@@ -1113,13 +1113,13 @@ posts 테이블에서 가져오게 바꿔줘.
 <div id="nav"><button id="bp" title="이전">◀</button><button id="bn" title="다음">▶</button></div>
 <button id="mbtn" title="슬라이드 목록 (g)">☰</button>
 <div id="menu"></div>
-<div id="hint">← → 이동 · g 목록 · f 전체화면 · 표는 → 키로 한 줄씩</div>
+<div id="hint">← → 이동 · g 목록 · f 전체화면</div>
 
 <script>
 (function(){
   var stage=document.getElementById('stage');
   var slides=[].slice.call(stage.querySelectorAll('.slide'));
-  var N=slides.length, cur=0, fr=0;
+  var N=slides.length, cur=0, fragTimers=[];
   var typeTimers=[];
 
   /* ----- 화면 크기에 맞춰 1920x1080 무대를 축소 ----- */
@@ -1172,8 +1172,11 @@ posts 테이블에서 가져오게 바꿔줘.
       s.classList.toggle('after',k>i);
     });
     var fs=frags(i);
-    fs.forEach(function(f){f.classList.remove('show')}); fr=0;
-    if(opt.end){fs.forEach(function(f){f.classList.add('show')});fr=fs.length}
+    fragTimers.forEach(clearTimeout); fragTimers=[];
+    fs.forEach(function(f){f.classList.remove('show')});
+    /* 표 줄(.f)은 키를 누르지 않아도 차례로 나타남. 뒤로 왔을 때는 바로 다 보임 */
+    if(opt.end) fs.forEach(function(f){f.classList.add('show')});
+    else fs.forEach(function(f,k){fragTimers.push(setTimeout(function(){if(cur===i)f.classList.add('show')},600+k*350))});
     stopTypers();
     if(opt.end) finishTypers(slides[i]); else startTypers(slides[i]);
     stopConfetti();
@@ -1184,13 +1187,9 @@ posts 테이블에서 가져오게 바꿔줘.
     try{history.replaceState(null,'','#'+(i+1))}catch(e){}
   }
   function next(){
-    var fs=frags(cur);
-    if(fr<fs.length){fs[fr++].classList.add('show');return}
     if(cur<N-1) go(cur+1);
   }
   function prev(){
-    var fs=frags(cur);
-    if(fr>0){fs[--fr].classList.remove('show');return}
     if(cur>0) go(cur-1,{end:true});
   }
 

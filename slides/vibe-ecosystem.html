@@ -737,7 +737,7 @@ claude mcp remove notion</pre></div>
 </section>
 
 <section class="slide" data-sec="4장 MCP" data-title="확인 지점 · 안전">
-  <div class="hd a"><span class="stepno">4-5</span><span class="badge me">👀 확인</span><span class="dim" style="font-size:26px">→ 키로 하나씩 보기</span></div>
+  <div class="hd a"><span class="stepno">4-5</span><span class="badge me">👀 확인</span></div>
   <h2 class="a sm" style="--d:1">연결됐는지 <em>확인</em></h2>
   <div class="goal a" style="--d:2;margin-top:0"><span class="lb">여기까지 하면</span><code>/mcp</code> 에서 서버가 연결됨(connected)으로 보이고, 요청에 Claude가 MCP 도구를 호출함</div>
   <div class="th3 a" style="--d:3;margin-top:28px"><span>증상</span><span>의심할 것</span><span>해결</span></div>
@@ -839,7 +839,7 @@ claude mcp remove notion</pre></div>
 </section>
 
 <section class="slide" data-sec="5장 플러그인" data-title="안 될 때 · 설치 전 주의">
-  <div class="hd a"><span class="stepno">5-4</span><span class="badge me">안 되면 의심할 것</span><span class="dim" style="font-size:26px">→ 키로 하나씩 보기</span></div>
+  <div class="hd a"><span class="stepno">5-4</span><span class="badge me">안 되면 의심할 것</span></div>
   <h2 class="a sm" style="--d:1">안 될 때 <em>의심할 것</em></h2>
   <div class="th3 a" style="--d:2"><span>증상</span><span>원인</span><span>해결</span></div>
   <div class="tr3 f"><span class="sy"><code>/commit-commands:commit</code> 이 목록에 없음</span><span>아직 활성화 전</span><span class="fx"><code>/reload-plugins</code> 실행</span></div>
@@ -1018,13 +1018,13 @@ claude mcp remove notion</pre></div>
 <div id="nav"><button id="bp" title="이전">◀</button><button id="bn" title="다음">▶</button></div>
 <button id="mbtn" title="슬라이드 목록 (g)">☰</button>
 <div id="menu"></div>
-<div id="hint">← → 이동 · g 목록 · f 전체화면 · 표는 → 키로 한 줄씩</div>
+<div id="hint">← → 이동 · g 목록 · f 전체화면</div>
 
 <script>
 (function(){
   var stage=document.getElementById('stage');
   var slides=[].slice.call(stage.querySelectorAll('.slide'));
-  var N=slides.length, cur=0, fr=0;
+  var N=slides.length, cur=0, fragTimers=[];
   var typeTimers=[];
 
   /* ----- 화면 크기에 맞춰 1920x1080 무대를 축소 ----- */
@@ -1077,8 +1077,11 @@ claude mcp remove notion</pre></div>
       s.classList.toggle('after',k>i);
     });
     var fs=frags(i);
-    fs.forEach(function(f){f.classList.remove('show')}); fr=0;
-    if(opt.end){fs.forEach(function(f){f.classList.add('show')});fr=fs.length}
+    fragTimers.forEach(clearTimeout); fragTimers=[];
+    fs.forEach(function(f){f.classList.remove('show')});
+    /* 표 줄(.f)은 키를 누르지 않아도 차례로 나타남. 뒤로 왔을 때는 바로 다 보임 */
+    if(opt.end) fs.forEach(function(f){f.classList.add('show')});
+    else fs.forEach(function(f,k){fragTimers.push(setTimeout(function(){if(cur===i)f.classList.add('show')},600+k*350))});
     stopTypers();
     if(opt.end) finishTypers(slides[i]); else startTypers(slides[i]);
     stopConfetti();
@@ -1089,13 +1092,9 @@ claude mcp remove notion</pre></div>
     try{history.replaceState(null,'','#'+(i+1))}catch(e){}
   }
   function next(){
-    var fs=frags(cur);
-    if(fr<fs.length){fs[fr++].classList.add('show');return}
     if(cur<N-1) go(cur+1);
   }
   function prev(){
-    var fs=frags(cur);
-    if(fr>0){fs[--fr].classList.remove('show');return}
     if(cur>0) go(cur-1,{end:true});
   }
 

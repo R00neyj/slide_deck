@@ -509,7 +509,7 @@ body:hover #nav{opacity:.85}
 </section>
 
 <section class="slide" data-sec="3. 에이전트에게 지시" data-title="요구사항 프롬프트 · 줄별 이유">
-  <div class="hd a"><span class="stepno">3-1</span><span class="badge me">왜 넣었나</span><span class="dim" style="font-size:26px">→ 키로 하나씩 보기</span></div>
+  <div class="hd a"><span class="stepno">3-1</span><span class="badge me">왜 넣었나</span></div>
   <h2 class="a sm" style="--d:1">요구사항 프롬프트 <em>줄별 이유</em></h2>
   <div class="th3 a" style="--d:2;grid-template-columns:1fr 2fr"><span>줄</span><span>왜 넣었나</span></div>
   <div class="tr3 f" style="grid-template-columns:1fr 2fr"><span class="sy">위치: 연락처 아래</span><span>위치를 안 알려주면 맨 위나 엉뚱한 자리에 넣기 쉬움</span></div>
@@ -543,7 +543,7 @@ Guestbook 컴포넌트를 만들어줘.
 </section>
 
 <section class="slide" data-sec="3. 에이전트에게 지시" data-title="컴포넌트 프롬프트 · 줄별 이유 1">
-  <div class="hd a"><span class="stepno">3-2</span><span class="badge me">왜 넣었나 ①</span><span class="dim" style="font-size:26px">→ 키로 하나씩 보기</span></div>
+  <div class="hd a"><span class="stepno">3-2</span><span class="badge me">왜 넣었나 ①</span></div>
   <h2 class="a sm" style="--d:1">컴포넌트 프롬프트 <em>줄별 이유</em></h2>
   <div class="th3 a" style="--d:2;grid-template-columns:1fr 2fr .55fr"><span>줄</span><span>왜 넣었나</span><span>조건</span></div>
   <div class="tr3 f" style="grid-template-columns:1fr 2fr .55fr"><span class="sy">요구사항.md의 방명록 항목으로</span><span>제목과 안내 문구를 요구사항 파일에서 가져오게 함. 안 적으면 문구를 새로 지어냄</span><span class="fx">근거 파일</span></div>
@@ -553,7 +553,7 @@ Guestbook 컴포넌트를 만들어줘.
 </section>
 
 <section class="slide" data-sec="3. 에이전트에게 지시" data-title="컴포넌트 프롬프트 · 줄별 이유 2">
-  <div class="hd a"><span class="stepno">3-2</span><span class="badge me">왜 넣었나 ②</span><span class="dim" style="font-size:26px">→ 키로 하나씩 보기</span></div>
+  <div class="hd a"><span class="stepno">3-2</span><span class="badge me">왜 넣었나 ②</span></div>
   <h2 class="a sm" style="--d:1">컴포넌트 프롬프트 <em>줄별 이유</em></h2>
   <div class="th3 a" style="--d:2;grid-template-columns:1fr 2fr .55fr"><span>줄</span><span>왜 넣었나</span><span>조건</span></div>
   <div class="tr3 f" style="grid-template-columns:1fr 2fr .55fr"><span class="sy">Contact 아래에 배치</span><span>화면에 붙이는 것까지 시킴. 이 줄이 없으면 파일만 생기고 화면에는 안 나올 수 있음</span><span class="fx">범위 하나</span></div>
@@ -593,7 +593,7 @@ Guestbook 컴포넌트를 만들어줘.
 </section>
 
 <section class="slide" data-sec="3. 에이전트에게 지시" data-title="안 되면 의심할 것">
-  <div class="hd a"><span class="badge me">안 되면 의심할 것</span><span class="dim" style="font-size:26px">→ 키로 하나씩 보기</span></div>
+  <div class="hd a"><span class="badge me">안 되면 의심할 것</span></div>
   <h2 class="a sm" style="--d:1">창이 안 뜰 때 <em>의심할 것</em></h2>
   <div class="th3 a" style="--d:2"><span>증상</span><span>원인</span><span>해결</span></div>
   <div class="tr3 f"><span class="sy">창 자리가 비어 있음</span><span><code>App.tsx</code>에서 안 불러옴</span><span class="fx">"방명록이 화면에 안 나와. App.tsx 확인해줘"</span></div>
@@ -737,13 +737,13 @@ giscus와 Supabase 중 어느 쪽이 맞을지
 <div id="nav"><button id="bp" title="이전">◀</button><button id="bn" title="다음">▶</button></div>
 <button id="mbtn" title="슬라이드 목록 (g)">☰</button>
 <div id="menu"></div>
-<div id="hint">← → 이동 · g 목록 · f 전체화면 · 표는 → 키로 한 줄씩</div>
+<div id="hint">← → 이동 · g 목록 · f 전체화면</div>
 
 <script>
 (function(){
   var stage=document.getElementById('stage');
   var slides=[].slice.call(stage.querySelectorAll('.slide'));
-  var N=slides.length, cur=0, fr=0;
+  var N=slides.length, cur=0, fragTimers=[];
   var typeTimers=[];
 
   /* ----- 화면 크기에 맞춰 1920x1080 무대를 축소 ----- */
@@ -796,8 +796,11 @@ giscus와 Supabase 중 어느 쪽이 맞을지
       s.classList.toggle('after',k>i);
     });
     var fs=frags(i);
-    fs.forEach(function(f){f.classList.remove('show')}); fr=0;
-    if(opt.end){fs.forEach(function(f){f.classList.add('show')});fr=fs.length}
+    fragTimers.forEach(clearTimeout); fragTimers=[];
+    fs.forEach(function(f){f.classList.remove('show')});
+    /* 표 줄(.f)은 키를 누르지 않아도 차례로 나타남. 뒤로 왔을 때는 바로 다 보임 */
+    if(opt.end) fs.forEach(function(f){f.classList.add('show')});
+    else fs.forEach(function(f,k){fragTimers.push(setTimeout(function(){if(cur===i)f.classList.add('show')},600+k*350))});
     stopTypers();
     if(opt.end) finishTypers(slides[i]); else startTypers(slides[i]);
     stopConfetti();
@@ -808,13 +811,9 @@ giscus와 Supabase 중 어느 쪽이 맞을지
     try{history.replaceState(null,'','#'+(i+1))}catch(e){}
   }
   function next(){
-    var fs=frags(cur);
-    if(fr<fs.length){fs[fr++].classList.add('show');return}
     if(cur<N-1) go(cur+1);
   }
   function prev(){
-    var fs=frags(cur);
-    if(fr>0){fs[--fr].classList.remove('show');return}
     if(cur>0) go(cur-1,{end:true});
   }
 

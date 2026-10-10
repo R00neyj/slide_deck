@@ -439,7 +439,7 @@ body:hover #nav{opacity:.85}
   <p class="md dim a" style="--d:7;margin-top:auto">라이브러리 : 남이 만들어 둔 코드 묶음. 설치해서 가져다 씀</p>
 </section>
 <section class="slide" data-sec="시작" data-title="이번 주 포인트 · 상태">
-  <div class="hd a"><span class="badge me">0-1. 이번 주 포인트</span><span class="dim" style="font-size:26px">→ 키로 한 줄씩</span></div>
+  <div class="hd a"><span class="badge me">0-1. 이번 주 포인트</span></div>
   <h2 class="a sm" style="--d:1">움직이는 화면은 <em>상태로 쪼개서</em> 말함</h2>
   <p class="md a" style="--d:2;margin-bottom:22px">"인스타처럼 해줘" 한 줄이면 에이전트가 빠진 상황을 마음대로 채움. 사용자 눈에 보이는 상태를 하나씩 적음</p>
   <div class="th3 a" style="--d:3"><span>UI</span><span>사용자가 보게 되는 상태</span><span>안 적으면 생기는 일</span></div>
@@ -783,7 +783,7 @@ color: <span class="st">#ff7a4d</span>  →  color: <span class="pr">#ff7a4d</sp
   <div class="call tip a" style="--d:5;margin-top:22px;font-size:27px"><span class="ic">📄</span><div>규칙은 "파일 하나"지만 카드와 목록은 짝이라 같이 시킴. <b>파일 이름을 적어 두면</b> 그 두 개 밖은 안 건드림</div></div>
 </section>
 <section class="slide" data-sec="1일차" data-title="STEP 7 휴대폰 화면으로 보기">
-  <div class="hd a"><span class="stepno">STEP 7</span><span class="badge me">🖱 내가 직접</span><span class="dim" style="font-size:26px">→ 키로 한 줄씩</span></div>
+  <div class="hd a"><span class="stepno">STEP 7</span><span class="badge me">🖱 내가 직접</span></div>
   <h2 class="a sm" style="--d:1">휴대폰 화면으로 <em>보기</em></h2>
   <div class="row a" style="--d:2;gap:22px;margin-bottom:26px">
     <div class="sc g1"><span class="no">1</span><b><code>F12</code></b><small>개발자도구 열기</small></div>
@@ -872,7 +872,7 @@ color: <span class="st">#ff7a4d</span>  →  color: <span class="pr">#ff7a4d</sp
   <div class="call tip a" style="--d:7;margin-top:auto"><span class="ic">🧩</span><div>점이나 <code>2/4</code> 표시는 Swiper에서 따로 켜야 하는 <b>부가 기능(모듈)</b>임. 그래서 프롬프트에서 시안을 가리켜 원하는 모양을 정해 줌</div></div>
 </section>
 <section class="slide" data-sec="1일차" data-title="STEP 9 안 되면 의심할 것">
-  <div class="hd a"><span class="badge me">STEP 9 · 안 되면 의심할 것</span><span class="dim" style="font-size:26px">→ 키로 하나씩 보기</span></div>
+  <div class="hd a"><span class="badge me">STEP 9 · 안 되면 의심할 것</span></div>
   <h2 class="a sm" style="--d:1">캐러셀 <em>문제 해결</em> 표</h2>
   <div class="th3 a" style="--d:2"><span>증상</span><span>원인</span><span>에이전트에게 할 말</span></div>
   <div class="tr3 f"><span class="sy">사진이 세로로 줄줄이 펼쳐짐</span><span>Swiper CSS 를 안 불러옴</span><span class="fx">swiper 의 CSS 파일을 불러왔는지 확인해줘</span></div>
@@ -996,13 +996,13 @@ color: <span class="st">#ff7a4d</span>  →  color: <span class="pr">#ff7a4d</sp
 <div id="nav"><button id="bp" title="이전">◀</button><button id="bn" title="다음">▶</button></div>
 <button id="mbtn" title="슬라이드 목록 (g)">☰</button>
 <div id="menu"></div>
-<div id="hint">← → 이동 · g 목록 · f 전체화면 · 표는 → 키로 한 줄씩</div>
+<div id="hint">← → 이동 · g 목록 · f 전체화면</div>
 
 <script>
 (function(){
   var stage=document.getElementById('stage');
   var slides=[].slice.call(stage.querySelectorAll('.slide'));
-  var N=slides.length, cur=0, fr=0;
+  var N=slides.length, cur=0, fragTimers=[];
   var typeTimers=[];
 
   /* ----- 화면 크기에 맞춰 1920x1080 무대를 축소 ----- */
@@ -1055,8 +1055,11 @@ color: <span class="st">#ff7a4d</span>  →  color: <span class="pr">#ff7a4d</sp
       s.classList.toggle('after',k>i);
     });
     var fs=frags(i);
-    fs.forEach(function(f){f.classList.remove('show')}); fr=0;
-    if(opt.end){fs.forEach(function(f){f.classList.add('show')});fr=fs.length}
+    fragTimers.forEach(clearTimeout); fragTimers=[];
+    fs.forEach(function(f){f.classList.remove('show')});
+    /* 표 줄(.f)은 키를 누르지 않아도 차례로 나타남. 뒤로 왔을 때는 바로 다 보임 */
+    if(opt.end) fs.forEach(function(f){f.classList.add('show')});
+    else fs.forEach(function(f,k){fragTimers.push(setTimeout(function(){if(cur===i)f.classList.add('show')},600+k*350))});
     stopTypers();
     if(opt.end) finishTypers(slides[i]); else startTypers(slides[i]);
     stopConfetti();
@@ -1067,13 +1070,9 @@ color: <span class="st">#ff7a4d</span>  →  color: <span class="pr">#ff7a4d</sp
     try{history.replaceState(null,'','#'+(i+1))}catch(e){}
   }
   function next(){
-    var fs=frags(cur);
-    if(fr<fs.length){fs[fr++].classList.add('show');return}
     if(cur<N-1) go(cur+1);
   }
   function prev(){
-    var fs=frags(cur);
-    if(fr>0){fs[--fr].classList.remove('show');return}
     if(cur>0) go(cur-1,{end:true});
   }
 
