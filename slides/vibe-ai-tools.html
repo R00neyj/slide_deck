@@ -1,0 +1,918 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%2316161b'/%3E%3Crect x='20' y='20' width='60' height='14' fill='%23c93d14'/%3E%3Crect x='20' y='44' width='60' height='8' fill='%23f2efe8'/%3E%3Crect x='20' y='60' width='40' height='8' fill='%23f2efe8'/%3E%3C/svg%3E">
+<title>AI 도구 함께 쓰기 · Codex × Claude Code × Figma</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#f2efe8;--ink:#16161b;--panel:#fbfaf6;--panel2:#e9e5db;
+  --line:rgba(22,22,27,.28);--text:#16161b;--dim:#5f5e58;
+  --acc:#c93d14;--green:#1b7f52;--blue:#2147c9;--amber:#a96b00;
+  /* 이전 이름 호환 */
+  --bg:var(--paper);--yellow:var(--acc);--pink:var(--acc);--red:var(--acc);--orange:var(--amber);--purple:#4b3bc4;
+  --sans:'Pretendard Variable',Pretendard,'Noto Sans KR','Malgun Gothic','Apple SD Gothic Neo',sans-serif;
+  --mono:'JetBrains Mono','Noto Sans KR',monospace;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:#0c0c0f;overflow:hidden;font-family:var(--sans);-webkit-font-smoothing:antialiased}
+#stage{position:absolute;left:50%;top:50%;width:1920px;height:1080px;transform-origin:center center;background:var(--paper);overflow:hidden;color:var(--ink);word-break:keep-all;overflow-wrap:break-word}
+.bg{display:none}
+
+/* ---------- 슬라이드 ---------- */
+.slide{position:absolute;inset:0;z-index:1;padding:70px 120px 84px;display:flex;flex-direction:column;opacity:0;visibility:hidden;transition:opacity .4s,transform .4s,visibility 0s .4s}
+.slide.on{opacity:1;visibility:visible;transform:none;transition:opacity .4s,transform .4s,visibility 0s}
+.slide.before{transform:translateX(-70px)}
+.slide.after{transform:translateX(70px)}
+.a{opacity:0}
+.on .a{animation:rise .65s cubic-bezier(.2,.8,.2,1) both;animation-delay:calc(var(--d,0)*.12s + .1s)}
+.on .a.pop{animation-name:pop}
+.on .a.zoom{animation-name:zoom}
+.on .a.left{animation-name:fromleft}
+.on .a.right{animation-name:fromright}
+@keyframes rise{from{opacity:0;transform:translateY(34px)}to{opacity:1;transform:none}}
+@keyframes pop{0%{opacity:0;transform:scale(.7)}65%{opacity:1;transform:scale(1.05)}100%{opacity:1;transform:none}}
+@keyframes zoom{from{opacity:0;transform:scale(.9)}to{opacity:1;transform:none}}
+@keyframes fromleft{from{opacity:0;transform:translateX(-60px)}to{opacity:1;transform:none}}
+@keyframes fromright{from{opacity:0;transform:translateX(60px)}to{opacity:1;transform:none}}
+.f{opacity:0;transform:translateY(24px);transition:opacity .5s,transform .5s;pointer-events:none}
+.f.show{opacity:1;transform:none;pointer-events:auto}
+
+/* ---------- 글자 ---------- */
+h1,h2,h3{margin:0;font-family:var(--sans);font-weight:800;letter-spacing:-.035em}
+h2{font-size:80px;line-height:1.12;margin:20px 0 26px}
+h2.sm{font-size:66px;margin:16px 0 20px}
+h3{font-size:40px;line-height:1.25;letter-spacing:-.02em}
+h2 em,h1 em,.grad,.grad2{font-style:normal;color:var(--acc);background:none;-webkit-text-fill-color:currentColor}
+p{margin:0}
+.lead{font-size:38px;line-height:1.55}
+.md{font-size:32px;line-height:1.5}
+.dim{color:var(--dim)}
+.mono{font-family:var(--mono)}
+b{font-weight:800}
+b.g{color:var(--green)}b.y,b.p,b.r{color:var(--acc)}b.bl{color:var(--blue)}b.o{color:var(--amber)}
+code{font:500 .86em var(--mono);background:rgba(22,22,27,.09);padding:2px 9px;border-radius:3px;color:var(--ink)}
+.src{position:absolute;left:120px;bottom:30px;font-size:22px;color:var(--dim)}
+
+/* ---------- 상단 띠 ---------- */
+.hd{display:flex;align-items:baseline;gap:22px;flex-wrap:wrap;padding-bottom:14px;border-bottom:3px solid var(--ink)}
+.stepno{font:800 32px var(--sans);letter-spacing:.01em;color:var(--acc);background:none;padding:0;border-radius:0}
+.badge{font:700 24px var(--sans);padding:3px 14px;border:2px solid var(--ink);border-radius:0;letter-spacing:0;background:none}
+.badge.agent{background:var(--ink);color:var(--paper)}
+.badge.me{color:var(--ink)}
+.badge.both{border-color:var(--acc);color:var(--acc)}
+.chips{display:flex;gap:12px;flex-wrap:wrap}
+.chips span{font:500 26px var(--mono);padding:6px 16px;border:2px solid var(--ink);border-radius:0}
+
+/* ---------- 레이아웃 ---------- */
+.body{flex:1;display:flex;gap:48px;min-height:0;align-items:stretch}
+.col{display:flex;flex-direction:column;gap:22px;min-width:0}
+.row{display:flex;gap:28px;align-items:stretch}
+.g1{flex:1}.g15{flex:1.5}.g2{flex:2}
+.mid{justify-content:center}
+.ac{align-items:center}
+.card{background:var(--panel);border:1px solid var(--line);border-top:5px solid var(--ink);border-radius:0;padding:26px 32px}
+.card h3{margin-bottom:10px}
+ul.ls,ol.ls{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:18px;font-size:36px;line-height:1.45}
+ul.ls li,ol.ls li{padding-left:56px;position:relative}
+ul.ls li::before{content:'';position:absolute;left:6px;top:.62em;width:20px;height:20px;background:var(--acc)}
+ol.ls{counter-reset:n}
+ol.ls li::before{counter-increment:n;content:counter(n);position:absolute;left:0;top:.06em;width:42px;height:42px;background:var(--ink);color:var(--paper);font:800 26px/42px var(--sans);text-align:center}
+ul.ls.sm,ol.ls.sm{font-size:32px;gap:14px}
+
+.call{display:flex;gap:20px;align-items:flex-start;padding:20px 28px;border-radius:0;font-size:30px;line-height:1.5;border:0;border-left:8px solid var(--ink);background:var(--panel2)}
+.call .ic{font-size:38px;line-height:1.1;flex:none}
+.call.warn{border-left-color:var(--amber);background:#efe4cc}
+.call.tip{border-left-color:var(--ink);background:var(--panel2)}
+.call.bad{border-left-color:var(--acc);background:#f1d9d0}
+.call.ok{border-left-color:var(--green);background:#d8e8dd}
+.call b{color:var(--ink)}
+.goal{margin-top:20px;display:flex;align-items:center;gap:24px;padding:16px 28px;border-radius:0;font-size:32px;line-height:1.4;background:var(--ink);color:var(--paper)}
+.goal .dim{color:#bdbbb2}
+.goal b{color:var(--paper)!important}
+.goal code{background:rgba(255,255,255,.16);color:var(--paper)}
+.goal .lb{flex:none;font:800 26px var(--sans);background:var(--acc);color:var(--paper);padding:6px 18px;border-radius:0}
+
+/* ---------- 터미널 · 코드 ---------- */
+.term,.code{background:#17171c;border:0;border-radius:4px;overflow:hidden;display:flex;flex-direction:column;color:#e9e8e2}
+.tb{display:flex;align-items:center;gap:10px;padding:13px 20px;background:#0f0f13;font:500 22px var(--mono);color:#9a9890}
+.tb i{width:13px;height:13px;border-radius:50%;background:#55534d}
+.tb span{margin-left:12px}
+.term pre,.code pre{margin:0;padding:22px 28px;font:400 24px/1.55 var(--mono);white-space:pre-wrap;color:#ecebe5;flex:1}
+.t1::after{content:'▍';color:#ff7a4d;animation:blink 1s steps(2) infinite}
+.fin .t1::after{content:''}
+@keyframes blink{50%{opacity:0}}
+.kw{color:#c6aaff}.cm{color:#8b8a82}.st{color:#f2c96b}.fn{color:#7db4ff}.nu{color:#ff9f5a}.pr{color:#5fd7a1}.hl{background:rgba(201,61,20,.14);color:var(--acc);padding:0 6px;font-weight:800}
+.term .hl{background:rgba(255,122,77,.22);color:#ffb08f}
+.add{display:block;background:rgba(95,215,161,.18);margin:0 -28px;padding:0 28px;box-shadow:inset 6px 0 0 #5fd7a1}
+.cmt{display:block;color:#8b8a82}
+
+/* ---------- 표 ---------- */
+.tbl{border-collapse:collapse;width:100%;font-size:32px}
+.tbl th{font:800 24px var(--sans);color:var(--dim);text-align:left;padding:0 22px 8px;letter-spacing:.04em}
+.tbl td{background:transparent;padding:16px 22px;border-top:2px solid var(--ink)}
+.tbl tr:last-child td{border-bottom:2px solid var(--ink)}
+.tr3{display:grid;grid-template-columns:1.25fr 1fr 1.25fr;gap:22px;padding:14px 22px;border-radius:0;background:transparent;border:0;border-top:2px solid var(--ink);font-size:27px;line-height:1.4;align-items:center;margin-bottom:0}
+.tr3 .sy{color:var(--acc);font-weight:800}
+.tr3 .fx{color:var(--green);font-weight:700}
+.th3{display:grid;grid-template-columns:1.25fr 1fr 1.25fr;gap:22px;padding:0 22px 8px;font:800 24px var(--sans);color:var(--dim);letter-spacing:.04em}
+
+/* ---------- 브라우저 목업 ---------- */
+.browser{background:#f6f7ff;color:#1d2140;border:2px solid var(--ink);border-radius:8px;overflow:hidden;display:flex;flex-direction:column}
+.bb{display:flex;align-items:center;gap:9px;padding:11px 18px;background:#dfe2f5;border-bottom:2px solid var(--ink)}
+.bb i{width:13px;height:13px;border-radius:50%;background:#9a9db8;flex:none}
+.url{margin-left:10px;flex:1;background:#fff;border-radius:999px;padding:5px 18px;font:500 21px var(--mono);color:#7a80a8;white-space:nowrap;overflow:hidden}
+.pg{padding:22px 26px;flex:1;position:relative;overflow:hidden}
+.bt{font:800 38px var(--sans);letter-spacing:-.03em;color:#2b2f6b;margin-bottom:14px}
+.post{background:#fff;border-radius:10px;padding:14px 22px;margin-bottom:12px;box-shadow:0 2px 0 #e3e5f7}
+.post b{display:block;font-size:28px;line-height:1.3}
+.post small{display:block;color:#7a80a8;font-size:22px;margin-top:2px}
+.btn{display:inline-block;background:#4a5bff;color:#fff;padding:8px 22px;border-radius:8px;font-size:24px;font-weight:700}
+.inp{background:#fff;border:2px solid #cfd3ee;border-radius:8px;padding:8px 14px;font-size:24px;color:#1d2140;margin-bottom:10px;white-space:nowrap;overflow:hidden}
+.float{animation:fl 5s ease-in-out infinite alternate}
+@keyframes fl{from{transform:translateY(0)}to{transform:translateY(-14px)}}
+
+/* ---------- DB · 파이프 ---------- */
+svg.db{color:var(--ink)}
+.pipe{position:relative;height:4px;background:repeating-linear-gradient(90deg,var(--ink) 0 12px,transparent 12px 24px);flex:1;min-width:80px;opacity:.9}
+.pipe i{position:absolute;top:-10px;left:0;width:24px;height:24px;border-radius:50%;background:var(--acc);animation:flow 2.1s linear infinite;animation-delay:var(--t,0s);opacity:0}
+.pipe i:nth-child(even){background:var(--ink);animation-direction:reverse}
+@keyframes flow{0%{left:0;opacity:0}10%{opacity:1}90%{opacity:1}100%{left:calc(100% - 24px);opacity:0}}
+.sheet{border-collapse:separate;border-spacing:0;font-size:25px;background:#fff;color:#1d2140;border:2px solid var(--ink)}
+.sheet th{background:var(--ink);color:var(--paper);padding:12px 18px;text-align:left;font-weight:700;font-family:var(--mono)}
+.sheet td{padding:12px 18px;border-top:1px solid #d8d6cf;white-space:nowrap}
+.sheet td.mono{font-family:var(--mono)}
+
+/* ---------- 구간 표지 ---------- */
+.slide.divider{background:var(--ink);color:var(--paper);justify-content:center;align-items:flex-start}
+.dv-big{font:800 340px/1 var(--sans);color:var(--acc);letter-spacing:-.06em}
+.divider h2{font-size:96px;color:var(--paper)}
+.divider h2 em{color:var(--acc)}
+.divider .dim{color:#a9a79f}
+.orb{display:none}
+
+/* ---------- 로드맵 ---------- */
+.rd{display:flex;flex-direction:column;gap:18px}
+.rdh{font:800 44px var(--sans);letter-spacing:-.03em;display:flex;align-items:center;gap:20px}
+.day{font:800 34px var(--sans);padding:2px 20px;border-radius:0;color:var(--paper);background:var(--ink)}
+.day.d2{background:var(--acc)}
+.road{position:relative;display:grid;grid-template-columns:repeat(4,1fr);margin-bottom:14px}
+.road::before,.road::after{content:'';position:absolute;left:12.5%;right:12.5%;top:46px;height:6px;background:rgba(22,22,27,.2)}
+.road::after{background:var(--ink);transform-origin:left;transform:scaleX(0)}
+.road.p::after{background:var(--acc)}
+.on .road::after{animation:grow 1.6s .5s ease-out both}
+@keyframes grow{to{transform:scaleX(1)}}
+.node{display:flex;flex-direction:column;align-items:center;text-align:center;gap:10px;position:relative;z-index:1}
+.node .dot{width:96px;height:96px;border-radius:0;background:var(--paper);border:5px solid var(--ink);display:grid;place-items:center;font:800 46px var(--sans)}
+.road.p .dot{border-color:var(--acc);color:var(--acc)}
+.node b{font-size:32px}
+.node small{font-size:25px;color:var(--dim)}
+
+/* ---------- 카드 · 용어 ---------- */
+.cards5{display:grid;grid-template-columns:repeat(5,1fr);gap:0;flex:none;border-top:5px solid var(--ink)}
+.tc{background:transparent;border:0;border-right:1px solid var(--line);border-radius:0;padding:30px 22px;display:flex;flex-direction:column;gap:14px;align-items:flex-start;text-align:left}
+.tc:last-child{border-right:0}
+.tc .em{font-size:70px;line-height:1}
+.tc h3{font-size:54px}
+.tc p{font-size:32px;line-height:1.5;color:var(--dim)}
+.tc p b{color:var(--ink)}
+.pulse{animation:pulse 2.4s ease-in-out infinite}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
+.shake{animation:shake 3s ease-in-out infinite}
+@keyframes shake{0%,70%,100%{transform:translateX(0)}74%{transform:translateX(-10px) rotate(-3deg)}78%{transform:translateX(10px) rotate(3deg)}82%{transform:translateX(-8px)}86%{transform:translateX(8px)}90%{transform:translateX(-4px)}}
+
+/* ---------- 체크리스트 · 토글 ---------- */
+.chk{display:flex;align-items:center;gap:22px;padding:15px 24px;border-radius:0;background:var(--panel);border:2px solid var(--ink);font-size:33px;cursor:pointer;transition:.25s;user-select:none}
+.chk .bx{width:42px;height:42px;border-radius:0;border:3px solid var(--ink);display:grid;place-items:center;font-size:28px;color:transparent;transition:.2s;flex:none}
+.chk.is-done{background:#d8e8dd;border-color:var(--green)}
+.chk.is-done .bx{background:var(--green);border-color:var(--green);color:var(--paper)}
+.chk small{margin-left:auto;font:500 24px var(--mono);color:var(--dim)}
+.tp{padding:18px 24px;border-radius:0;background:var(--panel);border:2px solid var(--ink);font-size:32px;font-weight:700;cursor:pointer;display:flex;gap:16px;align-items:center;transition:.2s;user-select:none}
+.tp:hover{transform:translateY(-3px)}
+.tp.sel{background:var(--acc);color:var(--paper);border-color:var(--acc)}
+.tp span{font-size:42px}
+.sw{display:flex;align-items:center;gap:20px;padding:16px 24px;border-radius:0;background:var(--panel);border:2px solid var(--ink);cursor:pointer;font:700 30px var(--sans);color:var(--ink);text-align:left;width:100%}
+.sw .knob{width:84px;height:44px;border-radius:22px;background:#8d8b84;position:relative;flex:none;transition:.3s}
+.sw .knob::after{content:'';position:absolute;left:5px;top:5px;width:34px;height:34px;border-radius:50%;background:#fff;transition:.3s}
+.sw.is-on .knob{background:var(--green)}
+.sw.is-on .knob::after{left:45px}
+.sw small{display:block;font:500 22px var(--mono);color:var(--dim);margin-top:2px}
+.gates{display:flex;align-items:center;gap:0}
+.person{font-size:86px;flex:none}
+.gate{flex:none;width:210px;height:210px;border-radius:0;border:5px solid;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;transition:.35s;text-align:center;font-size:26px;font-weight:800}
+.gate .gi{font-size:66px;line-height:1}
+.gate.closed{border-color:var(--acc);background:#f1d9d0}
+.gate.open{border-color:var(--green);background:#d8e8dd}
+.res{border-radius:0;padding:22px 30px;font-size:30px;line-height:1.45;border:0;border-left:10px solid;animation:zoom .45s both}
+.res b{display:block;font:700 32px var(--mono);margin-bottom:4px}
+.res.bad{background:#f1d9d0;border-color:var(--acc)}
+.res.warn{background:#efe4cc;border-color:var(--amber)}
+.res.ok{background:#d8e8dd;border-color:var(--green)}
+
+/* ---------- 파이프라인 · 단계 ---------- */
+.pl{display:flex;align-items:center;gap:0}
+.stg{flex:1;background:var(--panel);border:3px solid var(--ink);border-radius:0;padding:24px 14px;text-align:center;font-size:29px;font-weight:700;position:relative;min-height:200px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;line-height:1.35}
+.stg .ic{font-size:50px;line-height:1}
+.stg small{font-size:23px;color:var(--dim);font-weight:400}
+.stg .tick{position:absolute;top:-20px;right:-16px;width:46px;height:46px;border-radius:0;background:var(--green);color:var(--paper);font:800 28px/46px var(--sans);text-align:center;transform:scale(0)}
+.pl .arr{flex:none;width:44px;text-align:center;font-size:40px;color:var(--ink)}
+.on .stg{animation:stg 1s both;animation-delay:calc(var(--k)*1.5s + .8s)}
+.on .stg .tick{animation:tick .5s both;animation-delay:calc(var(--k)*1.5s + 1.6s)}
+@keyframes stg{0%{border-color:var(--ink);background:var(--panel)}30%{border-color:var(--acc);background:#f1d9d0}100%{border-color:var(--green);background:#d8e8dd}}
+@keyframes tick{from{transform:scale(0)}to{transform:scale(1)}}
+.on .stg.a.pop{animation-name:pop;animation-duration:.7s;animation-delay:calc(var(--d,0)*.12s + .12s)}
+.stp{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+.sc{background:var(--panel);border:1px solid var(--line);border-top:5px solid var(--ink);border-radius:0;padding:22px 28px;font-size:30px;line-height:1.4;position:relative;display:flex;flex-direction:column;gap:8px}
+.sc .no{font:800 30px var(--sans);color:var(--paper);background:var(--ink);align-self:flex-start;padding:2px 16px;border-radius:0}
+.sc b{font-size:34px}
+.sc small{font-size:25px;color:var(--dim)}
+.sc.new{border-top-color:var(--acc);background:#f1d9d0}
+.sc.new .no{background:var(--acc)}
+.map{display:grid;grid-template-columns:repeat(13,1fr);gap:8px}
+.mt{border-radius:0;padding:14px 0;text-align:center;font:800 40px var(--sans);border:3px solid var(--ink);display:flex;flex-direction:column;gap:2px;background:transparent}
+.mt small{font:500 22px var(--sans)}
+.mt.ag{background:var(--ink);color:var(--paper)}
+.mt.me{background:transparent}
+.mt.bo{background:var(--acc);border-color:var(--acc);color:var(--paper)}
+
+/* ---------- 오버레이 UI ---------- */
+#prog{position:fixed;left:0;top:0;height:6px;background:var(--acc);width:0;transition:width .4s;z-index:60}
+#ctr{position:fixed;right:18px;bottom:10px;font:500 18px var(--mono);color:#8c8a82;z-index:60}
+#nav{position:fixed;left:50%;bottom:10px;transform:translateX(-50%);display:flex;gap:10px;opacity:0;transition:.3s;z-index:60}
+body:hover #nav{opacity:.85}
+#nav button,#mbtn{width:44px;height:44px;border-radius:50%;border:2px solid #16161b;background:#f2efe8;color:#16161b;font-size:20px;cursor:pointer}
+#mbtn{position:fixed;right:16px;top:16px;z-index:61;opacity:.3}
+#mbtn:hover{opacity:1}
+#menu{position:fixed;right:0;top:0;bottom:0;width:440px;background:#16161b;transform:translateX(100%);transition:.3s;overflow:auto;z-index:70;padding:20px 18px 40px;font:500 18px var(--sans);color:#d7d5cd}
+#menu.open{transform:none}
+#menu h4{margin:18px 8px 6px;font:700 16px var(--sans);color:#8f8d85;letter-spacing:.08em}
+#menu a{display:flex;gap:12px;padding:8px 12px;cursor:pointer;color:#d7d5cd;text-decoration:none}
+#menu a:hover{background:#26262d}
+#menu a.cur{background:#c93d14;color:#fff}
+#menu a span{color:#8f8d85;font-family:var(--mono);width:30px;flex:none}
+#menu a.cur span{color:#fff}
+#hint{position:fixed;left:50%;top:22px;transform:translateX(-50%);background:#16161b;color:#f2efe8;padding:10px 22px;font:500 18px var(--sans);z-index:80;transition:opacity .6s}
+#cf{position:absolute;left:0;top:0;width:1920px;height:1080px;pointer-events:none;z-index:5}
+
+/* ---------- 슬라이드별 ---------- */
+.cover{flex-direction:row;align-items:center;gap:50px}
+.cv-l{flex:1.2;display:flex;flex-direction:column;gap:26px}
+.cv-l h1{font-size:126px;line-height:1.08;letter-spacing:-.05em}
+.cv-r{flex:1;display:flex;align-items:center}
+.swap{position:relative;display:inline-block}
+.swap b{font-weight:800}
+.swap .s1{color:var(--acc);animation:sw1 6s infinite}
+.swap .s2{position:absolute;left:0;top:0;white-space:nowrap;color:#ffb08f;animation:sw2 6s infinite;opacity:0}
+@keyframes sw1{0%,38%{opacity:1}45%,92%{opacity:0}100%{opacity:1}}
+@keyframes sw2{0%,38%{opacity:0}45%,92%{opacity:1}100%{opacity:0}}
+.wipe{position:absolute;inset:0;background:#fff;animation:wipe 6s ease-in-out infinite}
+@keyframes wipe{0%,10%{clip-path:inset(0 100% 0 0)}45%,80%{clip-path:inset(0 0 0 0)}100%{clip-path:inset(0 100% 0 0)}}
+.view{position:absolute;inset:0;padding:22px 26px;background:#f6f7ff}
+.v-list{animation:vlist 8s infinite}
+.v-det{animation:vdet 8s infinite}
+@keyframes vlist{0%,40%{opacity:1}46%,90%{opacity:0}96%,100%{opacity:1}}
+@keyframes vdet{0%,40%{opacity:0}46%,90%{opacity:1}96%,100%{opacity:0}}
+.finger{position:absolute;font-size:56px;animation:fing 8s infinite;z-index:3;left:75%;top:85%;opacity:0}
+@keyframes fing{0%{left:75%;top:85%;opacity:0;transform:scale(1)}12%{left:52%;top:44%;opacity:1}30%{left:52%;top:44%;transform:scale(1)}34%{transform:scale(.8)}38%{transform:scale(1)}44%{left:52%;top:44%;opacity:0}52%{left:30%;top:12%;opacity:0}60%{left:30%;top:12%;opacity:1;transform:scale(1)}80%{left:30%;top:12%;transform:scale(1)}84%{transform:scale(.8)}88%{transform:scale(1)}94%{opacity:0}100%{left:75%;top:85%;opacity:0}}
+.sync{position:relative}
+.sync .nr{animation:nrow 9s infinite}
+.sync .nc{animation:ncard 9s infinite}
+@keyframes nrow{0%,10%{opacity:0;transform:translateY(-24px)}20%,92%{opacity:1;transform:none}100%{opacity:0}}
+@keyframes ncard{0%,50%{opacity:0;transform:translateY(-30px)}62%,92%{opacity:1;transform:none}100%{opacity:0}}
+.sync .nr td{background:#d9fbe9}
+.arrowx{font-size:90px;color:var(--acc);animation:arr 9s infinite}
+@keyframes arr{0%,32%{opacity:.2;transform:scale(1)}40%{opacity:1;transform:scale(1.25)}52%,100%{opacity:.2;transform:scale(1)}}
+.typew{display:inline-block;overflow:hidden;white-space:nowrap;vertical-align:bottom;max-width:0;animation:typew 9s steps(14) infinite}
+@keyframes typew{0%,5%{max-width:0}30%,90%{max-width:420px}100%{max-width:0}}
+.on .tickrow{animation:rise .6s both;animation-delay:calc(var(--d)*.5s + .6s)}
+.tickrow{opacity:0}
+.hole{animation:hole 4s ease-in-out infinite alternate}
+@keyframes hole{from{transform:rotate(-8deg)}to{transform:rotate(6deg)}}
+.loading{height:14px;background:var(--panel2);overflow:hidden;border:2px solid var(--ink)}
+.loading i{display:block;height:100%;width:0;background:var(--acc);animation:load 12s ease-in-out infinite}
+@keyframes load{0%{width:4%}80%{width:92%}100%{width:100%}}
+.cy{animation:cyc 9s infinite;position:absolute;left:0;right:0;text-align:center;opacity:0}
+.cy:nth-child(2){animation-delay:3s}.cy:nth-child(3){animation-delay:6s}
+@keyframes cyc{0%{opacity:0;transform:translateY(16px)}6%,30%{opacity:1;transform:none}36%,100%{opacity:0}}
+.sav{font-size:230px;line-height:1;animation:pulse 2s ease-in-out infinite}
+
+/* ---------- AI 도구 함께 쓰기 : 주고받기 흐름 ---------- */
+.flow{display:flex;align-items:center;gap:0}
+.nd{border:3px solid var(--ink);background:var(--panel);padding:18px 24px;font:800 32px/1.3 var(--sans);text-align:center;flex:none}
+.nd small{display:block;font:500 22px/1.4 var(--sans);color:var(--dim);margin-top:4px}
+.nd.k{background:var(--ink);color:var(--paper)}
+.nd.k small{color:#bdbbb2}
+.nd.fl{border-style:dashed;font:700 27px/1.3 var(--mono)}
+.nd.u{border-color:var(--acc);color:var(--acc)}
+.ed{flex:1;min-width:90px;display:flex;flex-direction:column;gap:14px;text-align:center;font-size:22px;line-height:1.3;color:var(--dim);padding:0 8px}
+.ed .pipe{min-width:0;flex:none}
+.flow.cvf .nd{font-size:26px;padding:14px 16px}
+.flow.cvf .nd.fl{font-size:22px}
+.flow.cvf .ed{min-width:50px;padding:0 4px}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><symbol id="db" viewBox="0 0 120 140"><ellipse cx="60" cy="26" rx="50" ry="20" fill="currentColor"/><path d="M10 26v88c0 11 22 20 50 20s50-9 50-20V26c0 11-22 20-50 20S10 37 10 26z" fill="currentColor" opacity=".85"/><path d="M10 62c0 11 22 20 50 20s50-9 50-20M10 98c0 11 22 20 50 20s50-9 50-20" stroke="#f2efe8" stroke-width="5" fill="none" opacity=".55"/></symbol></svg>
+<div id="stage">
+<div class="bg"></div>
+
+<section class="slide cover" data-sec="시작" data-title="표지">
+  <div class="cv-l">
+    <div class="a" style="--d:0"><span class="badge me">바이브코딩 · 강사 시연</span></div>
+    <h1 class="a" style="--d:1">AI 도구<br><em>함께</em> 쓰기</h1>
+    <p class="a lead dim" style="--d:2">Codex와 Claude Code가 파일 한 장으로 일을 주고받고<br>Figma에서 고친 디자인을 화면에 옮기는 과정을 봄</p>
+    <div class="a chips" style="--d:3"><span>Codex</span><span>Claude Code</span><span>Figma</span></div>
+  </div>
+  <div class="cv-r a zoom" style="--d:3">
+    <div class="flow cvf" style="width:100%">
+      <div class="nd k">Claude Code</div>
+      <div class="ed"><div class="pipe"><i style="--t:0s"></i><i style="--t:1s"></i></div></div>
+      <div class="nd fl">📄 HANDOFF.md<small>파일 한 장</small></div>
+      <div class="ed"><div class="pipe"><i style="--t:.5s"></i><i style="--t:1.5s"></i></div></div>
+      <div class="nd k">Codex</div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-sec="시작" data-title="수업 방식과 순서">
+  <div class="hd a"><span class="badge me">오늘 수업</span></div>
+  <h2 class="a" style="--d:1">따라 하지 않고 <em>화면을 봄</em></h2>
+  <div class="rd">
+    <div class="road">
+      <div class="node a pop" style="--d:2"><div class="dot">1</div><b>Codex 준비</b><small>STEP 1~2</small></div>
+      <div class="node a pop" style="--d:4"><div class="dot">2</div><b>핸드오프 두 번</b><small>STEP 3~4</small></div>
+      <div class="node a pop" style="--d:6"><div class="dot">3</div><b>AI만 바꾸기</b><small>STEP 5</small></div>
+      <div class="node a pop" style="--d:8"><div class="dot">4</div><b>Figma 옮기기</b><small>STEP 6~7</small></div>
+    </div>
+  </div>
+  <div class="row" style="gap:24px;margin-top:20px">
+    <div class="card g1 a" style="--d:9"><h3>💬 [에이전트]</h3><p class="md dim">에이전트 입력창에 프롬프트를 넣는 단계</p></div>
+    <div class="card g1 a" style="--d:10"><h3>🖱 [직접]</h3><p class="md dim">터미널·브라우저에서 사람이 하는 단계</p></div>
+  </div>
+  <div class="call tip a" style="--d:11;margin-top:auto"><span class="ic">📋</span><div>수업 뒤 직접 해 보려면 <b>문서의 코드 블록을 그대로 복사</b>해서 씀</div></div>
+</section>
+
+<section class="slide" data-sec="시작" data-title="새 용어 2개">
+  <div class="hd a"><span class="badge me">새 용어</span></div>
+  <h2 class="a" style="--d:1">새 용어는 <em>2개</em></h2>
+  <div class="body" style="gap:40px;flex:none">
+    <div class="card g1 a left col" style="--d:2;gap:16px">
+      <div style="font-size:80px">🤝</div>
+      <h3 style="font-size:54px">핸드오프</h3>
+      <p class="lead">한 AI가 하던 일을 <b>다른 AI에게 넘기는 것</b></p>
+      <p class="md dim">이번에는 파일 한 장에 적어서 넘김</p>
+    </div>
+    <div class="card g1 a right col" style="--d:3;gap:16px">
+      <div style="font-size:80px">📄</div>
+      <h3 style="font-size:54px" class="mono">AGENTS.md</h3>
+      <p class="lead">Codex가 시작할 때 <b>읽는 규칙 파일</b></p>
+      <p class="md dim">Claude Code의 <code>CLAUDE.md</code>와 같은 역할</p>
+    </div>
+  </div>
+</section>
+
+<section class="slide divider" data-sec="1. Codex 준비" data-title="1구간 시작">
+  <div class="dv-big a" style="--d:0">01</div>
+  <h2 class="a" style="--d:2">Codex <em>준비</em></h2>
+  <p class="lead dim a" style="--d:3">STEP 1 ~ 2 · Codex를 켜고 규칙 파일을 읽게 함</p>
+</section>
+
+<section class="slide" data-sec="1. Codex 준비" data-title="STEP 1 Codex 켜기">
+  <div class="hd a"><span class="stepno">STEP 1</span><span class="badge me">🖱 직접</span></div>
+  <h2 class="a" style="--d:1">Codex <em>켜기</em></h2>
+  <div class="body">
+    <div class="col g1" style="gap:22px">
+      <p class="lead a" style="--d:2">Codex는 <b>OpenAI가 만든 코딩 에이전트</b>임. Claude Code처럼 터미널에서 파일을 읽고 고침</p>
+      <ul class="ls sm a" style="--d:3"><li>설치 : <code>npm install -g @openai/codex</code></li><li>ChatGPT 계정으로 로그인</li></ul>
+      <div class="call warn a" style="--d:4;margin-top:auto"><span class="ic">💳</span><div>ChatGPT <b>요금제마다 Codex 사용량이 다름</b></div></div>
+    </div>
+    <div class="term g1 a right" style="--d:3"><div class="tb"><i></i><i></i><i></i><span>터미널 · my-sns 폴더</span></div><pre class="type">cd my-sns
+codex</pre></div>
+  </div>
+  <div class="goal a" style="--d:6"><span class="lb">화면에서 볼 것</span>Codex 입력창. Claude Code 입력창과 나란히 놓고 비교함</div>
+</section>
+
+<section class="slide" data-sec="1. Codex 준비" data-title="STEP 2 AGENTS.md">
+  <div class="hd a"><span class="stepno">STEP 2</span><span class="badge agent">💬 에이전트</span></div>
+  <h2 class="a" style="--d:1">Codex가 읽을 <em>규칙 파일</em></h2>
+  <p class="md a" style="--d:2;margin-bottom:22px">Codex는 <code>CLAUDE.md</code>를 읽지 않고 <code>AGENTS.md</code>를 읽음. 규칙을 두 군데에 쓰면 어긋나기 쉬워서 <b>"CLAUDE.md를 읽어라"만 적음</b></p>
+  <div class="body" style="gap:32px">
+    <div class="term g15 a left" style="--d:3"><div class="tb"><i></i><i></i><i></i><span>Claude Code 입력창</span></div><pre class="type" style="font-size:22px">프로젝트 루트에 AGENTS.md 를 만들어줘.
+내용은 아래 세 줄만 넣을 것.
+
+- 이 프로젝트의 작업 규칙은 CLAUDE.md 에 있음
+- 요구사항은 docs/요구사항.md 에 있음
+- 다른 AI 와 일을 주고받을 때는
+  docs/HANDOFF.md, docs/REVIEW.md 를 씀
+… (전체는 문서에서 복사)</pre></div>
+    <div class="term g1 a right" style="--d:4"><div class="tb"><i></i><i></i><i></i><span>Codex 입력창</span></div><pre class="type" data-delay="4000" style="font-size:22px">AGENTS.md 를 읽고,
+이 프로젝트에서 지켜야 할
+작업 규칙을 3줄로 요약해줘.
+코드는 고치지 마.</pre></div>
+  </div>
+  <div class="goal a" style="--d:6"><span class="lb">화면에서 볼 것</span>Codex가 <code>AGENTS.md</code>만 읽었는데 <code>CLAUDE.md</code> 규칙까지 요약함</div>
+</section>
+
+<section class="slide divider" data-sec="2. 핸드오프" data-title="2구간 시작">
+  <div class="dv-big a" style="--d:0">02</div>
+  <h2 class="a" style="--d:2">파일 한 장으로 <em>주고받기</em></h2>
+  <p class="lead dim a" style="--d:3">STEP 3 ~ 4 · 한 번은 Codex가 리뷰, 한 번은 Codex가 만들기</p>
+</section>
+
+<section class="slide" data-sec="2. 핸드오프" data-title="STEP 3 흐름">
+  <div class="hd a"><span class="stepno">STEP 3</span><span class="badge both">핸드오프 ①</span></div>
+  <h2 class="a" style="--d:1">Codex가 <em>리뷰</em>하고 Claude가 고침</h2>
+  <p class="md dim a" style="--d:2">SNS 2일차에 Claude Code가 만든 무한 스크롤 코드를 Codex가 읽고 문제를 적음</p>
+  <div class="flow a zoom" style="--d:3;margin:auto 0">
+    <div class="nd k">Codex</div>
+    <div class="ed">문제를 적음<div class="pipe"><i style="--t:0s"></i></div></div>
+    <div class="nd fl">REVIEW.md</div>
+    <div class="ed">읽고 동의 여부 답함<div class="pipe"><i style="--t:.7s"></i></div></div>
+    <div class="nd k">Claude Code</div>
+    <div class="ed">동의 항목 번호<div class="pipe"><i style="--t:1.4s"></i></div></div>
+    <div class="nd u">나<small>고칠 번호만 지시</small></div>
+  </div>
+  <div class="call tip a" style="--d:6"><span class="ic">📁</span><div>두 AI는 <b>서로의 대화를 볼 수 없음</b>. 둘 다 읽을 수 있는 건 프로젝트 폴더의 파일뿐이라 할 말을 파일에 적어 둠. 커밋에도 남아서 누가 무엇을 지적했는지 다시 볼 수 있음</div></div>
+</section>
+
+<section class="slide" data-sec="2. 핸드오프" data-title="3-1 Codex에게 리뷰">
+  <div class="hd a"><span class="stepno">3-1</span><span class="badge agent">💬 에이전트</span><span class="badge both">Codex</span></div>
+  <h2 class="a" style="--d:1">Codex에게 <em>리뷰</em> 맡기기</h2>
+  <div class="body">
+    <div class="col g1" style="gap:20px">
+      <ul class="ls sm a" style="--d:2"><li><b>코드는 고치지 않음</b>. 읽기만 함</li><li>문제는 <code>docs/REVIEW.md</code>에 적음</li><li>최대 5개, 중요한 것부터</li><li>확실하지 않으면 "확인 필요"</li></ul>
+    </div>
+    <div class="term g15 a right" style="--d:3"><div class="tb"><i></i><i></i><i></i><span>Codex 입력창</span></div><pre class="type" style="font-size:23px">무한 스크롤과 Supabase 불러오기 코드를
+리뷰해줘. 코드는 고치지 말 것.
+
+- 찾은 문제는 docs/REVIEW.md 에 적을 것. 최대 5개
+- 문제마다 파일 이름, 무엇이 문제인지,
+  사용자에게 어떻게 보이는지, 고치는 방법을 한 줄씩
+- 중요한 것부터 순서대로
+- 확실하지 않은 것은 "확인 필요"라고 표시할 것</pre></div>
+  </div>
+  <div class="goal a" style="--d:6"><span class="lb">화면에서 볼 것</span>Codex가 쓴 <code>docs/REVIEW.md</code>의 항목들</div>
+</section>
+
+<section class="slide" data-sec="2. 핸드오프" data-title="3-2 Claude에게 리뷰 읽히기">
+  <div class="hd a"><span class="stepno">3-2</span><span class="badge agent">💬 에이전트</span><span class="badge both">Claude Code</span></div>
+  <h2 class="a" style="--d:1">Claude에게 <em>리뷰 읽히기</em></h2>
+  <div class="body" style="gap:32px;align-items:center">
+    <div class="col g1" style="gap:16px">
+      <div class="term a left" style="--d:2"><div class="tb"><i></i><i></i><i></i><span>Claude Code 입력창 ①</span></div><pre class="type" style="font-size:27px">docs/REVIEW.md 는 다른 AI 가 쓴 리뷰야.
+항목마다 동의하는지, 동의하지 않으면
+왜 그런지 한 줄씩 알려줘.
+아직 코드는 고치지 마.</pre></div>
+      <p class="md dim a" style="--d:3">항목마다 동의하는지와 이유를 봄</p>
+    </div>
+    <div class="col g1" style="gap:16px">
+      <div class="term a right" style="--d:4"><div class="tb"><i></i><i></i><i></i><span>Claude Code 입력창 ②</span></div><pre class="type" data-delay="4500" style="font-size:27px">[동의한 항목 번호] 번만 고쳐줘.
+끝나면 docs/REVIEW.md 해당 항목 옆에
+"고침"이라고 적어줘.</pre></div>
+      <p class="md dim a" style="--d:5"><code>[대괄호]</code>는 실제 번호로 바꿈</p>
+    </div>
+  </div>
+  <div class="call warn a" style="--d:7;margin-top:20px"><span class="ic">⚖️</span><div>두 AI의 의견이 갈리는 항목은 고치지 않음. <b>무엇을 고칠지는 사람이 정함</b></div></div>
+</section>
+
+<section class="slide" data-sec="2. 핸드오프" data-title="3-3 확인과 체크포인트 1">
+  <div class="hd a"><span class="stepno">3-3</span><span class="badge me">🖱 직접</span></div>
+  <h2 class="a" style="--d:1">고친 뒤 <em>확인</em></h2>
+  <div class="body">
+    <div class="col g1" style="gap:22px">
+      <p class="lead a" style="--d:2">피드를 내려서 봄</p>
+      <ol class="ls sm a" style="--d:3"><li>카드가 <b>10개씩</b> 붙음</li><li>50개 뒤에 <b>"더 없음"</b>이 나옴</li></ol>
+      <p class="md dim a" style="--d:4">SNS 2일차 STEP 14, STEP 18-1과 같은 확인</p>
+    </div>
+    <div class="col g1" style="gap:12px">
+      <p class="md a" style="--d:4"><b>체크포인트 1</b></p>
+      <div class="term a right" style="--d:5"><div class="tb"><i></i><i></i><i></i><span>Claude Code 입력창</span></div><pre class="type" style="font-size:24px">지금 상태를 git 으로 커밋해줘.
+메시지는 "Codex 리뷰 반영".</pre></div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-sec="2. 핸드오프" data-title="STEP 3 프롬프트 해부">
+  <div class="hd a"><span class="badge me">왜 이렇게 하나</span><span class="dim" style="font-size:26px">STEP 3 프롬프트 해부</span></div>
+  <h2 class="a" style="--d:1">프롬프트 <em>한 줄씩</em> 보기</h2>
+  <table class="tbl a" style="--d:2;font-size:29px">
+    <tr><th style="width:34%">프롬프트</th><th>이유</th></tr>
+    <tr><td><code>코드는 고치지 말 것</code></td><td>리뷰하는 쪽이 코드까지 고치면 두 AI가 같은 파일을 번갈아 고치다 꼬임. 한쪽은 읽기만 하게 역할을 나눔</td></tr>
+    <tr><td><code>최대 5개</code>, <code>중요한 것부터</code></td><td>개수를 안 정하면 사소한 지적이 수십 개 나옴</td></tr>
+    <tr><td><code>동의하지 않으면 왜</code></td><td>리뷰가 늘 맞지는 않음. 다른 AI의 지적을 그대로 받아 고치게 하면 멀쩡한 코드를 바꾸기도 함</td></tr>
+  </table>
+</section>
+
+<section class="slide" data-sec="2. 핸드오프" data-title="STEP 4 흐름">
+  <div class="hd a"><span class="stepno">STEP 4</span><span class="badge both">핸드오프 ②</span></div>
+  <h2 class="a" style="--d:1">Claude가 <em>계획</em>하고 Codex가 만듦</h2>
+  <p class="md dim a" style="--d:2">이번에는 방향을 바꿈. 만들 기능은 <b style="color:var(--ink)">맨 위로 버튼</b>임</p>
+  <div class="flow a zoom" style="--d:3;margin:auto 0">
+    <div class="nd k">Claude Code<small>4-1 지시서 씀</small></div>
+    <div class="ed">할 일·하지 말 것<div class="pipe"><i style="--t:0s"></i></div></div>
+    <div class="nd fl">HANDOFF.md</div>
+    <div class="ed">읽고 만듦<div class="pipe"><i style="--t:.7s"></i></div></div>
+    <div class="nd k">Codex<small>4-2 "## 결과" 적음</small></div>
+    <div class="ed">결과 + git diff<div class="pipe"><i style="--t:1.4s"></i></div></div>
+    <div class="nd k">Claude Code<small>4-3 확인</small></div>
+  </div>
+  <div class="call bad a" style="--d:6"><span class="ic">🚦</span><div><b>두 AI를 동시에 돌리지 않음</b>. 같은 파일을 동시에 고칠 수 있음. 한쪽이 끝나고 커밋한 다음에 다른 쪽을 씀</div></div>
+</section>
+
+<section class="slide" data-sec="2. 핸드오프" data-title="4-1 작업 지시서">
+  <div class="hd a"><span class="stepno">4-1</span><span class="badge agent">💬 에이전트</span><span class="badge both">Claude Code</span></div>
+  <h2 class="a" style="--d:1">Claude에게 <em>작업 지시서</em> 쓰게 하기</h2>
+  <div class="body">
+    <div class="term g15 a left" style="--d:2"><div class="tb"><i></i><i></i><i></i><span>Claude Code 입력창</span></div><pre class="type" style="font-size:22px">"20개 이상 내려가면 오른쪽 아래에 맨 위로 버튼을
+보여주는 기능"을 다른 AI 에게 맡기려고 해.
+docs/HANDOFF.md 에 작업 지시서를 써줘. 코드는 고치지 마.
+
+- 할 일
+- 고칠 파일과 새로 만들 파일
+- 하지 말 것 (건드리면 안 되는 파일 포함)
+- 버튼 모양은 docs/요구사항.md 의 디자인 규칙을 따를 것
+- 다 했는지 확인하는 방법 3가지
+- 맨 아래에 "## 결과" 제목만 비워 둘 것</pre></div>
+    <div class="col g1" style="gap:18px;justify-content:center">
+      <div class="call tip a" style="--d:4;font-size:27px"><span class="ic">📝</span><div><b>작업 지시서</b> : 다른 AI에게 넘길 할 일·고칠 파일·하지 말 것·확인 방법을 적은 파일</div></div>
+      <div class="call tip a" style="--d:5;font-size:27px"><span class="ic">🔁</span><div>SNS 2일차 STEP 13에서 계획을 먼저 받은 것과 같은 방식. <b>받는 쪽이 다른 AI일 뿐</b>임</div></div>
+    </div>
+  </div>
+  <div class="goal a" style="--d:7"><span class="lb">화면에서 볼 것</span>"하지 말 것"과 "확인 방법". 빠진 게 있으면 넘기기 전에 고치게 함</div>
+</section>
+
+<section class="slide" data-sec="2. 핸드오프" data-title="4-2·4-3 만들고 확인">
+  <div class="hd a"><span class="stepno">4-2 · 4-3</span><span class="badge agent">💬 에이전트</span></div>
+  <h2 class="a" style="--d:1">Codex가 만들고 <em>Claude가 확인</em></h2>
+  <div class="body" style="gap:32px;align-items:center">
+    <div class="col g1" style="gap:16px">
+      <div class="term a left" style="--d:2"><div class="tb"><i></i><i></i><i></i><span>4-2 · Codex 입력창</span></div><pre class="type" style="font-size:27px">docs/HANDOFF.md 를 읽고 그대로 만들어줘.
+끝나면 HANDOFF.md 의 "## 결과" 아래에
+바꾼 파일과 확인 방법 3가지를
+직접 해 본 결과를 적어줘.</pre></div>
+      <p class="md dim a" style="--d:3">Codex가 일하는 동안 Claude Code에는 아무것도 시키지 않음</p>
+    </div>
+    <div class="col g1" style="gap:16px">
+      <div class="term a right" style="--d:4"><div class="tb"><i></i><i></i><i></i><span>4-3 · Claude Code 입력창</span></div><pre class="type" data-delay="5000" style="font-size:27px">docs/HANDOFF.md 의 "## 결과" 와 git diff 를
+보고, 지시서대로 만들어졌는지 확인해줘.
+지시서에 없는 파일이 바뀌었으면 알려줘.
+코드는 고치지 마.</pre></div>
+      <p class="md dim a" style="--d:5">SNS 2일차 부록 A의 "시키지 않은 일" 확인을 다른 AI에게 맡기는 셈</p>
+    </div>
+  </div>
+  <div class="call tip a" style="--d:7;margin-top:20px;font-size:27px"><span class="ic">📌</span><div><code>"## 결과" 제목만 비워 둘 것</code> : 만든 쪽이 결과를 같은 파일에 적게 해서 <b>확인하는 쪽이 파일 하나만 보면 됨</b></div></div>
+</section>
+
+<section class="slide" data-sec="2. 핸드오프" data-title="4-4 확인과 체크포인트 2">
+  <div class="hd a"><span class="stepno">4-4</span><span class="badge me">🖱 직접</span></div>
+  <h2 class="a" style="--d:1">맨 위로 버튼 <em>확인</em></h2>
+  <div class="stp" style="grid-template-columns:repeat(3,1fr)">
+    <div class="sc a pop" style="--d:2"><span class="no">1</span><b>20개 넘게 내림</b><small>오른쪽 아래에 버튼이 보임</small></div>
+    <div class="sc a pop" style="--d:3"><span class="no">2</span><b>버튼을 누름</b><small>맨 위로 올라감</small></div>
+    <div class="sc a pop" style="--d:4"><span class="no">3</span><b>맨 위에서</b><small>버튼이 사라짐</small></div>
+  </div>
+  <p class="md a" style="--d:5;margin:34px 0 12px"><b>체크포인트 2</b></p>
+  <div class="term a" style="--d:6"><div class="tb"><i></i><i></i><i></i><span>Claude Code 입력창</span></div><pre class="type" style="font-size:24px">지금 상태를 git 으로 커밋해줘. 메시지는 "맨 위로 버튼 (Codex 구현)".</pre></div>
+</section>
+
+<section class="slide divider" data-sec="3. AI만 바꾸기" data-title="3구간 시작">
+  <div class="dv-big a" style="--d:0">03</div>
+  <h2 class="a" style="--d:2">도구 하나에서 <em>AI만</em> 바꾸기</h2>
+  <p class="lead dim a" style="--d:3">STEP 5 · 도구 두 개 대신 대화를 이어 가며 모델만 바꿈</p>
+</section>
+
+<section class="slide" data-sec="3. AI만 바꾸기" data-title="STEP 5 omp">
+  <div class="hd a"><span class="stepno">STEP 5</span><span class="badge me">🖱 직접</span></div>
+  <h2 class="a" style="--d:1">대화는 그대로, <em>모델만</em> 바꿈</h2>
+  <div class="body">
+    <div class="col g1" style="gap:20px">
+      <p class="lead a" style="--d:2">STEP 1~4는 도구 두 개를 켜고 파일로 일을 넘김</p>
+      <ol class="ls sm a" style="--d:3"><li><b>omp</b>(oh-my-pi)를 <code>my-sns</code> 폴더에서 켬</li><li>GPT 모델로 요약을 받음</li><li><code>/model</code>로 Claude 모델로 바꿈</li><li>앞 대화를 이어서 답함</li></ol>
+      <p class="md dim a" style="--d:4">omp도 <code>CLAUDE.md</code>, <code>AGENTS.md</code>를 자동으로 읽음</p>
+    </div>
+    <div class="term g1 a right" style="--d:3"><div class="tb"><i></i><i></i><i></i><span>omp</span></div><pre class="type" style="font-size:24px">&gt; 이 프로젝트 요약해줘
+  (GPT 모델이 답함)
+
+/model
+  (Claude 모델로 바꿈)
+
+&gt; 방금 요약에서 빠진 것 있어?
+  (앞 대화를 이어서 답함)</pre></div>
+  </div>
+  <div class="call warn a" style="--d:6;margin-top:20px;font-size:27px"><span class="ic">⚠️</span><div>기본값이 명령 실행까지 묻지 않고 하는 모드(<code>yolo</code>)임. 직접 써 보려면 <b>먼저 <code>--approval-mode write</code>로 켬</b></div></div>
+  <p class="src">출처: oh-my-pi GitHub (github.com/can1357/oh-my-pi)</p>
+</section>
+
+<section class="slide divider" data-sec="4. Figma" data-title="4구간 시작">
+  <div class="dv-big a" style="--d:0">04</div>
+  <h2 class="a" style="--d:2">Figma 디자인을 <em>피드에</em></h2>
+  <p class="lead dim a" style="--d:3">STEP 6 ~ 7 · Figma에서 고친 카드를 Claude Code가 읽고 PostCard에 맞춤</p>
+</section>
+
+<section class="slide" data-sec="4. Figma" data-title="6-1 Figma 연결">
+  <div class="hd a"><span class="stepno">6-1</span><span class="badge me">🖱 직접</span></div>
+  <h2 class="a" style="--d:1">Figma <em>연결</em></h2>
+  <div class="body">
+    <div class="col g1" style="gap:16px">
+      <div class="term a left" style="--d:2"><div class="tb"><i></i><i></i><i></i><span>터미널 · Claude Code를 끈 상태</span></div><pre class="type" style="font-size:23px">claude plugin install figma@claude-plugins-official</pre></div>
+      <ol class="ls sm a" style="--d:3"><li>Claude Code를 다시 켬</li><li><code>/mcp</code> → <b>figma</b> → <b>Authenticate</b></li><li>브라우저에서 <b>Allow Access</b></li></ol>
+    </div>
+    <div class="col g1" style="gap:18px;justify-content:center">
+      <div class="call warn a" style="--d:5;font-size:27px"><span class="ic">🔢</span><div><b>무료 계정 한도</b><br>View·Collab 좌석은 <b>한 달에 20번</b>, Dev·Full 좌석은 <b>하루 200번</b>까지 읽음. 프롬프트 한 번에 여러 번 쓸 수 있으니 같은 프롬프트를 반복하지 않음</div></div>
+    </div>
+  </div>
+  <div class="goal a" style="--d:7"><span class="lb">여기까지 하면</span>"Authentication successful. Connected to figma"가 보임</div>
+  <p class="src">출처: Figma MCP Rate limits &amp; access (developers.figma.com/docs/figma-mcp-server/rate-limits-access)</p>
+</section>
+
+<section class="slide" data-sec="4. Figma" data-title="6-2 카드 디자인 고치기">
+  <div class="hd a"><span class="stepno">6-2</span><span class="badge me">🖱 직접</span></div>
+  <h2 class="a" style="--d:1">Figma에서 <em>카드</em> 고치기</h2>
+  <div class="stp">
+    <div class="sc a pop" style="--d:2"><span class="no">1</span><b>카드 프레임 열기</b><small>Figma 파일의 게시물 카드</small></div>
+    <div class="sc a pop" style="--d:3"><span class="no">2</span><b>한두 가지 바꾸기</b><small>모서리 둥글기, 작성자 이름 굵기, 카드 사이 간격</small></div>
+    <div class="sc new a pop" style="--d:4"><span class="no">3</span><b>프레임 링크 복사</b><small>오른쪽 클릭 → Copy/Paste as → <b style="font-size:25px">Copy link to selection</b></small></div>
+  </div>
+  <div class="call tip a" style="--d:6;margin-top:auto"><span class="ic">🔗</span><div><code>Copy link to selection</code> : 링크에 고른 프레임 번호가 들어감. 파일 전체를 읽으면 필요 없는 화면까지 읽어서 <b>요청 횟수를 더 씀</b></div></div>
+</section>
+
+<section class="slide" data-sec="4. Figma" data-title="6-3 디자인 옮기기">
+  <div class="hd a"><span class="stepno">6-3</span><span class="badge agent">💬 에이전트</span><span class="badge both">Claude Code</span></div>
+  <h2 class="a" style="--d:1">디자인 <em>옮기기</em></h2>
+  <div class="body">
+    <div class="term g15 a left" style="--d:2"><div class="tb"><i></i><i></i><i></i><span>Claude Code 입력창</span></div><pre class="type" style="font-size:22px">이 Figma 프레임을 보고 PostCard 모양을 맞춰줘.
+[복사한 Figma 링크]
+
+- 먼저 지금 PostCard 와 다른 점을 목록으로
+  보여주고, 내가 허락하면 고칠 것
+- 요구사항.md 의 디자인 규칙과 다른 부분이
+  있으면 따로 알려줄 것
+- PostCard 와 관련 CSS 만 고칠 것.
+  무한 스크롤 코드는 건드리지 말 것</pre></div>
+    <div class="col g1" style="gap:18px;justify-content:center">
+      <div class="call tip a" style="--d:4;font-size:27px"><span class="ic">📋</span><div><code>먼저 다른 점을 목록으로</code> : Figma 디자인이 SNS 1일차 디자인 규칙과 부딪칠 수 있음. <b>어느 쪽을 따를지 사람이 고름</b></div></div>
+      <div class="call tip a" style="--d:5;font-size:27px"><span class="ic">✏️</span><div>규칙을 바꾸기로 했으면 <code>요구사항.md 의 디자인 규칙도 Figma 에 맞춰 고쳐줘</code>를 이어서 시킴</div></div>
+    </div>
+  </div>
+  <div class="goal a" style="--d:7"><span class="lb">화면에서 볼 것</span>"다른 점" 목록 → 허락 → 카드가 Figma 모양으로 바뀜. 사진 넘기기와 무한 스크롤은 그대로</div>
+</section>
+
+<section class="slide" data-sec="4. Figma" data-title="안 되면 의심할 것">
+  <div class="hd a"><span class="badge me">안 되면 의심할 것</span><span class="dim" style="font-size:26px">→ 키로 하나씩 보기</span></div>
+  <h2 class="a sm" style="--d:1">Figma가 <em>안 될 때</em></h2>
+  <div class="th3 a" style="--d:2"><span>증상</span><span>원인</span><span>할 일</span></div>
+  <div class="tr3 f"><span class="sy"><code>/mcp</code>에 figma가 없음</span><span>설치 뒤 Claude Code를 다시 켜지 않음</span><span class="fx">Claude Code를 끄고 다시 켬</span></div>
+  <div class="tr3 f"><span class="sy">링크를 줬는데 못 읽음</span><span>프레임이 아닌 파일 전체 링크를 줌</span><span class="fx">카드 프레임을 고르고 Copy link to selection 다시</span></div>
+  <div class="tr3 f"><span class="sy">한도 안내가 뜸</span><span>읽기 횟수를 다 씀</span><span class="fx">한도가 풀릴 때까지 기다림</span></div>
+  <p class="md a" style="--d:3;margin:36px 0 12px"><b>체크포인트 3</b></p>
+  <div class="term a" style="--d:4"><div class="tb"><i></i><i></i><i></i><span>Claude Code 입력창</span></div><pre style="font-size:24px">지금 상태를 git 으로 커밋해줘. 메시지는 "Figma 카드 디자인 반영".</pre></div>
+</section>
+
+<section class="slide" data-sec="4. Figma" data-title="STEP 7 배포 확인">
+  <div class="hd a"><span class="stepno">STEP 7</span><span class="badge agent">💬 에이전트</span></div>
+  <h2 class="a" style="--d:1">배포 주소 <em>다시 확인</em></h2>
+  <div class="term a" style="--d:2"><div class="tb"><i></i><i></i><i></i><span>Claude Code 입력창</span></div><pre class="type" style="font-size:25px">지금까지 커밋을 GitHub 에 올려줘.</pre></div>
+  <p class="md dim a" style="--d:3;margin:22px 0 30px">GitHub Actions가 끝나기를 기다림</p>
+  <div class="pl">
+    <div class="stg" style="--k:0"><span class="tick">✓</span><span class="ic">⬆️</span>푸시<small>커밋 올리기</small></div><span class="arr">›</span>
+    <div class="stg" style="--k:1"><span class="tick">✓</span><span class="ic">⚙️</span>Actions<small>빌드·배포</small></div><span class="arr">›</span>
+    <div class="stg" style="--k:2"><span class="tick">✓</span><span class="ic">📱</span>휴대폰으로 열기<small>배포 주소</small></div>
+  </div>
+  <div class="goal a" style="--d:8"><span class="lb">여기까지 하면</span>맨 위로 버튼과 바뀐 카드가 배포 주소에서도 보임</div>
+</section>
+
+<section class="slide" data-sec="부록" data-title="자주 나는 문제">
+  <div class="hd a"><span class="badge agent">부록 · 한눈에 보기</span></div>
+  <h2 class="a sm" style="--d:1">자주 나는 문제 · <em>가장 먼저 의심할 것</em></h2>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;font-size:29px;line-height:1.4">
+    <div class="card a pop" style="--d:2;padding:16px 24px"><b class="r">Codex가 규칙을 모름</b><br><code>AGENTS.md</code>가 있는지, Codex를 <code>my-sns</code> 폴더에서 켰는지</div>
+    <div class="card a pop" style="--d:3;padding:16px 24px"><b class="r">두 AI가 같은 파일을 고쳐 꼬임</b><br>한쪽이 끝나고 커밋한 뒤에 다른 쪽을 썼는지. 꼬였으면 SNS 2일차 부록 B로 마지막 체크포인트로 되돌림</div>
+    <div class="card a pop" style="--d:4;padding:16px 24px"><b class="r"><code>/mcp</code>에 figma가 없음</b><br>플러그인 설치 뒤 Claude Code를 다시 켰는지</div>
+    <div class="card a pop" style="--d:5;padding:16px 24px"><b class="r">Figma 링크를 못 읽음</b><br>프레임을 고르고 Copy link to selection으로 복사했는지</div>
+  </div>
+</section>
+
+<section class="slide" data-sec="마무리" data-title="용어">
+  <div class="hd a"><span class="badge me">용어 정리</span></div>
+  <h2 class="a" style="--d:1">오늘 나온 <em>용어</em></h2>
+  <div class="cards5">
+    <div class="tc a pop" style="--d:2"><div class="em">🤖</div><h3 style="font-size:44px">Codex</h3><p>OpenAI가 만든 코딩 에이전트. ChatGPT 계정으로 로그인</p></div>
+    <div class="tc a pop" style="--d:3"><div class="em">📄</div><h3 style="font-size:36px" class="mono">AGENTS.md</h3><p>Codex가 시작할 때 읽는 규칙 파일</p></div>
+    <div class="tc a pop" style="--d:4"><div class="em">🤝</div><h3 style="font-size:44px">핸드오프</h3><p>한 AI가 하던 일을 다른 AI에게 넘기는 것</p></div>
+    <div class="tc a pop" style="--d:5"><div class="em">📝</div><h3 style="font-size:44px">작업 지시서</h3><p>할 일·고칠 파일·하지 말 것·확인 방법을 적은 파일</p></div>
+    <div class="tc a pop" style="--d:6"><div class="em">🔌</div><h3 style="font-size:44px">Figma MCP</h3><p>Claude Code가 Figma 파일을 읽고 쓰게 이어 주는 연결</p></div>
+  </div>
+</section>
+
+<section class="slide" data-sec="마무리" data-title="마무리" data-confetti="1">
+  <div class="hd a"><span class="badge me">마무리</span></div>
+  <h2 class="a" style="--d:1">오늘 <em>본 것</em></h2>
+  <div class="row" style="gap:22px;flex-wrap:wrap">
+    <div class="card a pop" style="--d:2;flex:1 1 30%;text-align:center"><div style="font-size:60px">🔍</div><p class="md">Codex가 리뷰하고<br><b>Claude가 고침</b></p></div>
+    <div class="card a pop" style="--d:3;flex:1 1 30%;text-align:center"><div style="font-size:60px">🛠️</div><p class="md">Claude가 계획하고<br><b>Codex가 만듦</b></p></div>
+    <div class="card a pop" style="--d:4;flex:1 1 30%;text-align:center"><div style="font-size:60px">🎨</div><p class="md">Figma 카드를<br><b>피드에 옮김</b></p></div>
+  </div>
+  <div class="a" style="--d:9;margin:auto 0 0;text-align:center"><h1 style="font-size:110px"><em>수고했음</em></h1></div>
+</section>
+
+<canvas id="cf"></canvas>
+</div><!-- /#stage -->
+
+<div id="prog"></div>
+<div id="ctr"></div>
+<div id="nav"><button id="bp" title="이전">◀</button><button id="bn" title="다음">▶</button></div>
+<button id="mbtn" title="슬라이드 목록 (g)">☰</button>
+<div id="menu"></div>
+<div id="hint">← → 이동 · g 목록 · f 전체화면 · 표는 → 키로 한 줄씩</div>
+
+<script>
+(function(){
+  var stage=document.getElementById('stage');
+  var slides=[].slice.call(stage.querySelectorAll('.slide'));
+  var N=slides.length, cur=0, fr=0;
+  var typeTimers=[];
+
+  /* ----- 화면 크기에 맞춰 1920x1080 무대를 축소 ----- */
+  function fit(){
+    var s=Math.min(window.innerWidth/1920,window.innerHeight/1080);
+    stage.style.transform='translate(-50%,-50%) scale('+s+')';
+  }
+  window.addEventListener('resize',fit); fit();
+
+  /* ----- 타자 효과 ----- */
+  slides.forEach(function(sl){
+    [].forEach.call(sl.querySelectorAll('.type'),function(el){
+      el.dataset.full=el.textContent;
+      el.innerHTML='<span class="t1"></span><span class="t2" style="visibility:hidden"></span>';
+      el.querySelector('.t2').textContent=el.dataset.full;
+    });
+  });
+  function setTyped(el,n){
+    var full=el.dataset.full;
+    el.querySelector('.t1').textContent=full.slice(0,n);
+    el.querySelector('.t2').textContent=full.slice(n);
+  }
+  function stopTypers(){typeTimers.forEach(function(t){clearTimeout(t);clearInterval(t)});typeTimers=[]}
+  function startTypers(sl){
+    [].forEach.call(sl.querySelectorAll('.type'),function(el){
+      setTyped(el,0); el.classList.remove('fin');
+      var delay=parseInt(el.dataset.delay||'900',10), n=0, full=el.dataset.full;
+      var t=setTimeout(function(){
+        var iv=setInterval(function(){
+          n+=3; if(n>=full.length){n=full.length;clearInterval(iv);el.classList.add('fin')}
+          setTyped(el,n);
+        },24);
+        typeTimers.push(iv);
+      },delay);
+      typeTimers.push(t);
+    });
+  }
+  function finishTypers(sl){
+    [].forEach.call(sl.querySelectorAll('.type'),function(el){setTyped(el,el.dataset.full.length);el.classList.add('fin')});
+  }
+
+  /* ----- 이동 ----- */
+  function frags(i){return [].slice.call(slides[i].querySelectorAll('.f'))}
+  function go(i,opt){
+    opt=opt||{};
+    i=Math.max(0,Math.min(N-1,i)); cur=i;
+    slides.forEach(function(s,k){
+      s.classList.toggle('on',k===i);
+      s.classList.toggle('before',k<i);
+      s.classList.toggle('after',k>i);
+    });
+    var fs=frags(i);
+    fs.forEach(function(f){f.classList.remove('show')}); fr=0;
+    if(opt.end){fs.forEach(function(f){f.classList.add('show')});fr=fs.length}
+    stopTypers();
+    if(opt.end) finishTypers(slides[i]); else startTypers(slides[i]);
+    stopConfetti();
+    if(slides[i].hasAttribute('data-confetti')) setTimeout(function(){if(cur===i)startConfetti()},700);
+    document.getElementById('prog').style.width=((i+1)/N*100)+'%';
+    document.getElementById('ctr').textContent=(i+1)+' / '+N;
+    [].forEach.call(document.querySelectorAll('#menu a'),function(a,k){a.classList.toggle('cur',k===i)});
+    try{history.replaceState(null,'','#'+(i+1))}catch(e){}
+  }
+  function next(){
+    var fs=frags(cur);
+    if(fr<fs.length){fs[fr++].classList.add('show');return}
+    if(cur<N-1) go(cur+1);
+  }
+  function prev(){
+    var fs=frags(cur);
+    if(fr>0){fs[--fr].classList.remove('show');return}
+    if(cur>0) go(cur-1,{end:true});
+  }
+
+  /* ----- 키보드 · 터치 ----- */
+  document.addEventListener('keydown',function(e){
+    if(e.ctrlKey||e.metaKey||e.altKey) return;
+    var k=e.key;
+    if(k==='ArrowRight'||k==='PageDown'||k===' '||k==='Enter'){e.preventDefault();next()}
+    else if(k==='ArrowLeft'||k==='PageUp'||k==='Backspace'){e.preventDefault();prev()}
+    else if(k==='Home'){go(0)}
+    else if(k==='End'){go(N-1)}
+    else if(k==='g'||k==='G'||k==='m'){toggleMenu()}
+    else if(k==='Escape'){document.getElementById('menu').classList.remove('open')}
+    else if(k==='f'||k==='F'){
+      if(!document.fullscreenElement){document.documentElement.requestFullscreen&&document.documentElement.requestFullscreen()}
+      else{document.exitFullscreen&&document.exitFullscreen()}
+    }
+  });
+  var tx=null;
+  document.addEventListener('touchstart',function(e){tx=e.touches[0].clientX},{passive:true});
+  document.addEventListener('touchend',function(e){
+    if(tx===null)return; var dx=e.changedTouches[0].clientX-tx; tx=null;
+    if(Math.abs(dx)>60){dx<0?next():prev()}
+  },{passive:true});
+  document.getElementById('bn').onclick=function(){this.blur();next()};
+  document.getElementById('bp').onclick=function(){this.blur();prev()};
+
+  /* ----- 목록 메뉴 ----- */
+  var menu=document.getElementById('menu'), last='';
+  slides.forEach(function(s,i){
+    var sec=s.dataset.sec||'';
+    if(sec!==last){var h=document.createElement('h4');h.textContent=sec;menu.appendChild(h);last=sec}
+    var a=document.createElement('a');
+    a.innerHTML='<span>'+(i+1)+'</span>'+(s.dataset.title||('슬라이드 '+(i+1)));
+    a.onclick=function(){go(i);menu.classList.remove('open')};
+    menu.appendChild(a);
+  });
+  function toggleMenu(){menu.classList.toggle('open')}
+  document.getElementById('mbtn').onclick=function(){this.blur();toggleMenu()};
+
+  /* ----- 체크리스트 · 주제 카드 ----- */
+  [].forEach.call(document.querySelectorAll('.chk:not(.tickrow)'),function(c){
+    c.onclick=function(){c.classList.toggle('is-done')};
+  });
+  var tps=[].slice.call(document.querySelectorAll('.tp'));
+  tps.forEach(function(t){
+    t.onclick=function(){
+      tps.forEach(function(x){x.classList.remove('sel')});
+      t.classList.add('sel');
+      var out=document.getElementById('topicOut'); if(out) out.textContent=t.dataset.t;
+    };
+  });
+
+  /* ----- 체험 스위치 (.demo) -----
+     .demo 안에 .sw[data-k] 스위치, .gate[data-k] 관문, .case[data-needs="a b"] 결과 블록을 둠
+     켜진 스위치에 needs 가 모두 맞는 .case 중 needs 가 가장 많은 것 하나만 보임
+     needs 가 빈 .case 는 기본(모두 꺼짐) 결과. 상태 클래스는 is-on / open / closed 를 씀 */
+  [].forEach.call(document.querySelectorAll('.demo'),function(demo){
+    var on={};
+    function draw(){
+      [].forEach.call(demo.querySelectorAll('.gate[data-k]'),function(g){
+        var o=!!on[g.dataset.k];
+        g.classList.toggle('open',o); g.classList.toggle('closed',!o);
+        var gi=g.querySelector('.gi');
+        if(gi) gi.textContent=o?(g.dataset.iconOn||'🔓'):(g.dataset.iconOff||'🔒');
+      });
+      var cases=[].slice.call(demo.querySelectorAll('.case')), best=null, bn=-1;
+      cases.forEach(function(c){
+        var needs=(c.dataset.needs||'').split(/\s+/).filter(Boolean);
+        var ok=needs.every(function(k){return on[k]});
+        if(ok&&needs.length>bn){best=c;bn=needs.length}
+      });
+      cases.forEach(function(c){c.style.display=(c===best)?'':'none'});
+    }
+    [].forEach.call(demo.querySelectorAll('.sw[data-k]'),function(b){
+      b.onclick=function(){on[b.dataset.k]=!on[b.dataset.k];b.classList.toggle('is-on',!!on[b.dataset.k]);b.blur();draw()};
+    });
+    draw();
+  });
+
+  /* ----- 색종이 ----- */
+  var cv=document.getElementById('cf'), cx=cv.getContext('2d'), parts=[], raf=null;
+  cv.width=1920; cv.height=1080;
+  function startConfetti(){
+    parts=[]; var cols=['#c93d14','#16161b','#1b7f52','#2147c9','#a96b00','#5f5e58'];
+    for(var i=0;i<260;i++){
+      parts.push({x:Math.random()*1920,y:-Math.random()*1000-20,w:10+Math.random()*14,h:16+Math.random()*16,
+        vx:(Math.random()-.5)*3,vy:2+Math.random()*5,r:Math.random()*6,vr:(Math.random()-.5)*.3,c:cols[i%cols.length]});
+    }
+    (function loop(){
+      cx.clearRect(0,0,1920,1080);
+      parts.forEach(function(p){
+        p.x+=p.vx; p.y+=p.vy; p.r+=p.vr;
+        cx.save(); cx.translate(p.x,p.y); cx.rotate(p.r); cx.fillStyle=p.c; cx.fillRect(-p.w/2,-p.h/2,p.w,p.h); cx.restore();
+      });
+      parts=parts.filter(function(p){return p.y<1120});
+      if(parts.length){raf=requestAnimationFrame(loop)}else{raf=null}
+    })();
+  }
+  function stopConfetti(){if(raf){cancelAnimationFrame(raf);raf=null}cx.clearRect(0,0,1920,1080);parts=[]}
+
+  /* ----- 시작 ----- */
+  var start=parseInt((location.hash||'').replace('#',''),10);
+  go(isNaN(start)?0:start-1);
+  setTimeout(function(){var h=document.getElementById('hint');h.style.opacity=0;setTimeout(function(){h.style.display='none'},700)},5000);
+})();
+</script>
+</body>
+</html>

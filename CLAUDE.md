@@ -34,6 +34,7 @@
 
 - 교안 작성은 `anthropic-skills:coding-lesson-cheatsheet` (코딩 주제) 또는 `anthropic-skills:design-lesson-cheatsheet` (디자인 주제) 스킬 양식을 따름
 - 교안 원본은 rawdoc 원격 문서에 있음. 로컬 저장소에는 슬라이드만 둠
+- 교안은 수강생도 읽음. 강사만 볼 내용(시연 준비, 진행 메모)은 HTML 주석 `<!-- -->` 안에 넣음
 
 ### 문체
 
