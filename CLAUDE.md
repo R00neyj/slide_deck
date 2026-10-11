@@ -22,6 +22,25 @@
 | `rawdoc syntax` | 콜아웃·위키링크·수식 등 문서 문법 확인 |
 | `rawdoc upload` | 이미지 업로드 후 붙일 마크다운 출력 |
 
+### 교안 원문 위치
+
+슬라이드의 원문 교안은 rawdoc `수업자료/바이브코딩 수업자료` 폴더에 있음 (`rawdoc ls --path`로 확인). 전체 목차는 `수업자료/MOC`의 `2026-09. 바이브코딩`
+
+| 슬라이드 | 교안 제목 | 문서 id |
+|---|---|---|
+| `blog-slides-day1.html` | 바이브코딩_블로그_1일차 | `dc5397c0-d90f-40bb-b066-7498db8023f7` |
+| `blog-slides-day2.html` | 바이브코딩_블로그_2일차 | `dfd0335b-f76d-4689-8fee-4a04de49ca27` |
+| `vibe-context.html` | 바이브코딩_컨텍스트 | `47cb6298-60e9-409f-a64a-fd0ce6eef14d` |
+| `vibe-guestbook.html` | 바이브코딩_방명록_추가 | `0faf3f88-5087-4505-930e-e36aa021b6c0` |
+| `vibe-ecosystem.html` | 바이브코딩_클로드_생태계 | `8224ce4f-2dfa-4528-b58b-4e37a9bc1343` |
+| `sns-slides-day1.html` | 바이브코딩_SNS_1일차 | `dc155191-94b3-42d3-ab14-d2e821b48916` |
+| `sns-slides-day2.html` | 바이브코딩_SNS_2일차 | `4390f2fc-3f7a-448b-8753-a15ddf3cf970` |
+| `vibe-ai-tools.html` | 바이브코딩_AI도구_함께쓰기 | `68404c8b-3e62-4faa-9c2e-56206342fa79` |
+
+- 새 슬라이드를 만들면 이 표에 한 줄 추가
+- 슬라이드를 고칠 때는 해당 교안을 먼저 `get` 해서 내용을 맞춤
+- 수업 계획 전체는 `바이브코딩` 폴더의 `바이브코딩 수업계획안` (`81a25d03-c1f0-454e-ae3d-a65df147afc3`)
+
 규칙
 - 문서를 쓰기 전에 `rawdoc syntax`로 문법을 먼저 확인
 - 수정은 반드시 `get -o` → 파일 수정 → `put --base-version <get 때 판 번호>` 순서로 진행. 판 번호만 다시 읽고 옛 내용을 올리지 않음
