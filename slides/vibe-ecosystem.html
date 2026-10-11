@@ -21,8 +21,8 @@
   --mono:'JetBrains Mono','Noto Sans KR',monospace;
 }
 *{box-sizing:border-box}
-html,body{margin:0;height:100%;background:#0c0c0f;overflow:hidden;font-family:var(--sans);-webkit-font-smoothing:antialiased}
-#stage{position:absolute;left:50%;top:50%;width:1920px;height:1080px;transform-origin:center center;background:var(--paper);overflow:hidden;color:var(--ink);word-break:keep-all;overflow-wrap:break-word}
+html,body{margin:0;height:100%;background:#0c0c0f;overflow:hidden;position:fixed;inset:0;width:100%;font-family:var(--sans);-webkit-font-smoothing:antialiased}
+#stage{position:absolute;left:0;top:0;width:1920px;height:1080px;transform-origin:0 0;background:var(--paper);overflow:hidden;color:var(--ink);word-break:keep-all;overflow-wrap:break-word}
 .bg{display:none}
 
 /* ---------- 슬라이드 ---------- */
@@ -1029,8 +1029,9 @@ claude mcp remove notion</pre></div>
 
   /* ----- 화면 크기에 맞춰 1920x1080 무대를 축소 ----- */
   function fit(){
-    var s=Math.min(window.innerWidth/1920,window.innerHeight/1080);
-    stage.style.transform='translate(-50%,-50%) scale('+s+')';
+    var w=document.documentElement.clientWidth||window.innerWidth,h=window.innerHeight;
+    var s=Math.min(w/1920,h/1080);
+    stage.style.transform='translate('+(w-1920*s)/2+'px,'+(h-1080*s)/2+'px) scale('+s+')';
   }
   window.addEventListener('resize',fit); fit();
 
