@@ -36,6 +36,7 @@
 | `sns-slides-day1.html` | 바이브코딩_SNS_1일차 | `dc155191-94b3-42d3-ab14-d2e821b48916` |
 | `sns-slides-day2.html` | 바이브코딩_SNS_2일차 | `4390f2fc-3f7a-448b-8753-a15ddf3cf970` |
 | `vibe-ai-tools.html` | 바이브코딩_AI도구_함께쓰기 | `68404c8b-3e62-4faa-9c2e-56206342fa79` |
+| `vibe-uiux.html` | 바이브코딩_UIUX_용어정리 | `55d6746e-4e28-4769-9808-413df01d74e4` |
 
 - 새 슬라이드를 만들면 이 표에 한 줄 추가
 - 슬라이드를 고칠 때는 해당 교안을 먼저 `get` 해서 내용을 맞춤
