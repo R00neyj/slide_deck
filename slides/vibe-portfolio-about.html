@@ -1,0 +1,1164 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%2316161b'/%3E%3Crect x='20' y='20' width='60' height='14' fill='%23c93d14'/%3E%3Crect x='20' y='44' width='60' height='8' fill='%23f2efe8'/%3E%3Crect x='20' y='60' width='40' height='8' fill='%23f2efe8'/%3E%3C/svg%3E">
+<title>포트폴리오 About과 마무리 · 바이브코딩</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#f2efe8;--ink:#16161b;--panel:#fbfaf6;--panel2:#e9e5db;
+  --line:rgba(22,22,27,.28);--text:#16161b;--dim:#5f5e58;
+  --acc:#c93d14;--green:#1b7f52;--blue:#2147c9;--amber:#a96b00;
+  /* 이전 이름 호환 */
+  --bg:var(--paper);--yellow:var(--acc);--pink:var(--acc);--red:var(--acc);--orange:var(--amber);--purple:#4b3bc4;
+  --sans:'Pretendard Variable',Pretendard,'Noto Sans KR','Malgun Gothic','Apple SD Gothic Neo',sans-serif;
+  --mono:'JetBrains Mono','Noto Sans KR',monospace;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:#0c0c0f;overflow:hidden;position:fixed;inset:0;width:100%;font-family:var(--sans);-webkit-font-smoothing:antialiased}
+#stage{position:absolute;left:0;top:0;width:1920px;height:1080px;transform-origin:0 0;background:var(--paper);overflow:hidden;color:var(--ink);word-break:keep-all;overflow-wrap:break-word}
+.bg{display:none}
+
+/* ---------- 슬라이드 ---------- */
+.slide{position:absolute;inset:0;z-index:1;padding:70px 120px 84px;display:flex;flex-direction:column;opacity:0;visibility:hidden;transition:opacity .4s,transform .4s,visibility 0s .4s}
+.slide.on{opacity:1;visibility:visible;transform:none;transition:opacity .4s,transform .4s,visibility 0s}
+.slide.before{transform:translateX(-70px)}
+.slide.after{transform:translateX(70px)}
+.a{opacity:0}
+.on .a{animation:rise .65s cubic-bezier(.2,.8,.2,1) both;animation-delay:calc(var(--d,0)*.12s + .1s)}
+.on .a.pop{animation-name:pop}
+.on .a.zoom{animation-name:zoom}
+.on .a.left{animation-name:fromleft}
+.on .a.right{animation-name:fromright}
+@keyframes rise{from{opacity:0;transform:translateY(34px)}to{opacity:1;transform:none}}
+@keyframes pop{0%{opacity:0;transform:scale(.7)}65%{opacity:1;transform:scale(1.05)}100%{opacity:1;transform:none}}
+@keyframes zoom{from{opacity:0;transform:scale(.9)}to{opacity:1;transform:none}}
+@keyframes fromleft{from{opacity:0;transform:translateX(-60px)}to{opacity:1;transform:none}}
+@keyframes fromright{from{opacity:0;transform:translateX(60px)}to{opacity:1;transform:none}}
+.f{opacity:0;transform:translateY(24px);transition:opacity .5s,transform .5s;pointer-events:none}
+.f.show{opacity:1;transform:none;pointer-events:auto}
+
+/* ---------- 글자 ---------- */
+h1,h2,h3{margin:0;font-family:var(--sans);font-weight:800;letter-spacing:-.035em}
+h2{font-size:80px;line-height:1.12;margin:20px 0 26px}
+h2.sm{font-size:66px;margin:16px 0 20px}
+h3{font-size:40px;line-height:1.25;letter-spacing:-.02em}
+h2 em,h1 em,.grad,.grad2{font-style:normal;color:var(--acc);background:none;-webkit-text-fill-color:currentColor}
+p{margin:0}
+.lead{font-size:38px;line-height:1.55}
+.md{font-size:32px;line-height:1.5}
+.dim{color:var(--dim)}
+.mono{font-family:var(--mono)}
+b{font-weight:800}
+b.g{color:var(--green)}b.y,b.p,b.r{color:var(--acc)}b.bl{color:var(--blue)}b.o{color:var(--amber)}
+code{font:500 .86em var(--mono);background:rgba(22,22,27,.09);padding:2px 9px;border-radius:3px;color:var(--ink)}
+.src{position:absolute;left:120px;bottom:30px;font-size:22px;color:var(--dim)}
+
+/* ---------- 상단 띠 ---------- */
+.hd{display:flex;align-items:baseline;gap:22px;flex-wrap:wrap;padding-bottom:14px;border-bottom:3px solid var(--ink)}
+.stepno{font:800 32px var(--sans);letter-spacing:.01em;color:var(--acc);background:none;padding:0;border-radius:0}
+.badge{font:700 24px var(--sans);padding:3px 14px;border:2px solid var(--ink);border-radius:0;letter-spacing:0;background:none}
+.badge.agent{background:var(--ink);color:var(--paper)}
+.badge.me{color:var(--ink)}
+.badge.both{border-color:var(--acc);color:var(--acc)}
+.chips{display:flex;gap:12px;flex-wrap:wrap}
+.chips span{font:500 26px var(--mono);padding:6px 16px;border:2px solid var(--ink);border-radius:0}
+
+/* ---------- 레이아웃 ---------- */
+.body{flex:1;display:flex;gap:48px;min-height:0;align-items:stretch}
+.col{display:flex;flex-direction:column;gap:22px;min-width:0}
+.row{display:flex;gap:28px;align-items:stretch}
+.g1{flex:1}.g15{flex:1.5}.g2{flex:2}
+.mid{justify-content:center}
+.ac{align-items:center}
+.card{background:var(--panel);border:1px solid var(--line);border-top:5px solid var(--ink);border-radius:0;padding:26px 32px}
+.card h3{margin-bottom:10px}
+ul.ls,ol.ls{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:18px;font-size:36px;line-height:1.45}
+ul.ls li,ol.ls li{padding-left:56px;position:relative}
+ul.ls li::before{content:'';position:absolute;left:6px;top:.62em;width:20px;height:20px;background:var(--acc)}
+ol.ls{counter-reset:n}
+ol.ls li::before{counter-increment:n;content:counter(n);position:absolute;left:0;top:.06em;width:42px;height:42px;background:var(--ink);color:var(--paper);font:800 26px/42px var(--sans);text-align:center}
+ul.ls.sm,ol.ls.sm{font-size:32px;gap:14px}
+
+.call{display:flex;gap:20px;align-items:flex-start;padding:20px 28px;border-radius:0;font-size:30px;line-height:1.5;border:0;border-left:8px solid var(--ink);background:var(--panel2)}
+.call .ic{font-size:38px;line-height:1.1;flex:none}
+.call.warn{border-left-color:var(--amber);background:#efe4cc}
+.call.tip{border-left-color:var(--ink);background:var(--panel2)}
+.call.bad{border-left-color:var(--acc);background:#f1d9d0}
+.call.ok{border-left-color:var(--green);background:#d8e8dd}
+.call b{color:var(--ink)}
+.goal{margin-top:20px;display:flex;align-items:center;gap:24px;padding:16px 28px;border-radius:0;font-size:32px;line-height:1.4;background:var(--ink);color:var(--paper)}
+.goal .dim{color:#bdbbb2}
+.goal b{color:var(--paper)!important}
+.goal code{background:rgba(255,255,255,.16);color:var(--paper)}
+.goal .lb{flex:none;font:800 26px var(--sans);background:var(--acc);color:var(--paper);padding:6px 18px;border-radius:0}
+
+/* ---------- 터미널 · 코드 ---------- */
+.term,.code{background:#17171c;border:0;border-radius:4px;overflow:hidden;display:flex;flex-direction:column;color:#e9e8e2}
+.tb{display:flex;align-items:center;gap:10px;padding:13px 20px;background:#0f0f13;font:500 22px var(--mono);color:#9a9890}
+.tb i{width:13px;height:13px;border-radius:50%;background:#55534d}
+.tb span{margin-left:12px}
+.term pre,.code pre{margin:0;padding:22px 28px;font:400 24px/1.55 var(--mono);white-space:pre-wrap;color:#ecebe5;flex:1}
+.t1::after{content:'▍';color:#ff7a4d;animation:blink 1s steps(2) infinite}
+.fin .t1::after{content:''}
+@keyframes blink{50%{opacity:0}}
+.kw{color:#c6aaff}.cm{color:#8b8a82}.st{color:#f2c96b}.fn{color:#7db4ff}.nu{color:#ff9f5a}.pr{color:#5fd7a1}.hl{background:rgba(201,61,20,.14);color:var(--acc);padding:0 6px;font-weight:800}
+.term .hl{background:rgba(255,122,77,.22);color:#ffb08f}
+.add{display:block;background:rgba(95,215,161,.18);margin:0 -28px;padding:0 28px;box-shadow:inset 6px 0 0 #5fd7a1}
+.cmt{display:block;color:#8b8a82}
+
+/* ---------- 표 ---------- */
+.tbl{border-collapse:collapse;width:100%;font-size:32px}
+.tbl th{font:800 24px var(--sans);color:var(--dim);text-align:left;padding:0 22px 8px;letter-spacing:.04em}
+.tbl td{background:transparent;padding:16px 22px;border-top:2px solid var(--ink)}
+.tbl tr:last-child td{border-bottom:2px solid var(--ink)}
+.tr3{display:grid;grid-template-columns:1.25fr 1fr 1.25fr;gap:22px;padding:14px 22px;border-radius:0;background:transparent;border:0;border-top:2px solid var(--ink);font-size:27px;line-height:1.4;align-items:center;margin-bottom:0}
+.tr3 .sy{color:var(--acc);font-weight:800}
+.tr3 .fx{color:var(--green);font-weight:700}
+.th3{display:grid;grid-template-columns:1.25fr 1fr 1.25fr;gap:22px;padding:0 22px 8px;font:800 24px var(--sans);color:var(--dim);letter-spacing:.04em}
+
+/* ---------- 브라우저 목업 ---------- */
+.browser{background:#f6f7ff;color:#1d2140;border:2px solid var(--ink);border-radius:8px;overflow:hidden;display:flex;flex-direction:column}
+.bb{display:flex;align-items:center;gap:9px;padding:11px 18px;background:#dfe2f5;border-bottom:2px solid var(--ink)}
+.bb i{width:13px;height:13px;border-radius:50%;background:#9a9db8;flex:none}
+.url{margin-left:10px;flex:1;background:#fff;border-radius:999px;padding:5px 18px;font:500 21px var(--mono);color:#7a80a8;white-space:nowrap;overflow:hidden}
+.pg{padding:22px 26px;flex:1;position:relative;overflow:hidden}
+.bt{font:800 38px var(--sans);letter-spacing:-.03em;color:#2b2f6b;margin-bottom:14px}
+.post{background:#fff;border-radius:10px;padding:14px 22px;margin-bottom:12px;box-shadow:0 2px 0 #e3e5f7}
+.post b{display:block;font-size:28px;line-height:1.3}
+.post small{display:block;color:#7a80a8;font-size:22px;margin-top:2px}
+.btn{display:inline-block;background:#4a5bff;color:#fff;padding:8px 22px;border-radius:8px;font-size:24px;font-weight:700}
+.inp{background:#fff;border:2px solid #cfd3ee;border-radius:8px;padding:8px 14px;font-size:24px;color:#1d2140;margin-bottom:10px;white-space:nowrap;overflow:hidden}
+.float{animation:fl 5s ease-in-out infinite alternate}
+@keyframes fl{from{transform:translateY(0)}to{transform:translateY(-14px)}}
+
+/* ---------- DB · 파이프 ---------- */
+svg.db{color:var(--ink)}
+.pipe{position:relative;height:4px;background:repeating-linear-gradient(90deg,var(--ink) 0 12px,transparent 12px 24px);flex:1;min-width:80px;opacity:.9}
+.pipe i{position:absolute;top:-10px;left:0;width:24px;height:24px;border-radius:50%;background:var(--acc);animation:flow 2.1s linear infinite;animation-delay:var(--t,0s);opacity:0}
+.pipe i:nth-child(even){background:var(--ink);animation-direction:reverse}
+@keyframes flow{0%{left:0;opacity:0}10%{opacity:1}90%{opacity:1}100%{left:calc(100% - 24px);opacity:0}}
+.sheet{border-collapse:separate;border-spacing:0;font-size:25px;background:#fff;color:#1d2140;border:2px solid var(--ink)}
+.sheet th{background:var(--ink);color:var(--paper);padding:12px 18px;text-align:left;font-weight:700;font-family:var(--mono)}
+.sheet td{padding:12px 18px;border-top:1px solid #d8d6cf;white-space:nowrap}
+.sheet td.mono{font-family:var(--mono)}
+
+/* ---------- 구간 표지 ---------- */
+.slide.divider{background:var(--ink);color:var(--paper);justify-content:center;align-items:flex-start}
+.dv-big{font:800 340px/1 var(--sans);color:var(--acc);letter-spacing:-.06em}
+.divider h2{font-size:96px;color:var(--paper)}
+.divider h2 em{color:var(--acc)}
+.divider .dim{color:#a9a79f}
+.orb{display:none}
+
+/* ---------- 로드맵 ---------- */
+.rd{display:flex;flex-direction:column;gap:18px}
+.rdh{font:800 44px var(--sans);letter-spacing:-.03em;display:flex;align-items:center;gap:20px}
+.day{font:800 34px var(--sans);padding:2px 20px;border-radius:0;color:var(--paper);background:var(--ink)}
+.day.d2{background:var(--acc)}
+.road{position:relative;display:grid;grid-template-columns:repeat(4,1fr);margin-bottom:14px}
+.road::before,.road::after{content:'';position:absolute;left:12.5%;right:12.5%;top:46px;height:6px;background:rgba(22,22,27,.2)}
+.road::after{background:var(--ink);transform-origin:left;transform:scaleX(0)}
+.road.p::after{background:var(--acc)}
+.on .road::after{animation:grow 1.6s .5s ease-out both}
+@keyframes grow{to{transform:scaleX(1)}}
+.node{display:flex;flex-direction:column;align-items:center;text-align:center;gap:10px;position:relative;z-index:1}
+.node .dot{width:96px;height:96px;border-radius:0;background:var(--paper);border:5px solid var(--ink);display:grid;place-items:center;font:800 46px var(--sans)}
+.road.p .dot{border-color:var(--acc);color:var(--acc)}
+.node b{font-size:32px}
+.node small{font-size:25px;color:var(--dim)}
+
+/* ---------- 카드 · 용어 ---------- */
+.cards5{display:grid;grid-template-columns:repeat(5,1fr);gap:0;flex:none;border-top:5px solid var(--ink)}
+.tc{background:transparent;border:0;border-right:1px solid var(--line);border-radius:0;padding:30px 22px;display:flex;flex-direction:column;gap:14px;align-items:flex-start;text-align:left}
+.tc:last-child{border-right:0}
+.tc .em{font-size:70px;line-height:1}
+.tc h3{font-size:54px}
+.tc p{font-size:32px;line-height:1.5;color:var(--dim)}
+.tc p b{color:var(--ink)}
+.pulse{animation:pulse 2.4s ease-in-out infinite}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
+.shake{animation:shake 3s ease-in-out infinite}
+@keyframes shake{0%,70%,100%{transform:translateX(0)}74%{transform:translateX(-10px) rotate(-3deg)}78%{transform:translateX(10px) rotate(3deg)}82%{transform:translateX(-8px)}86%{transform:translateX(8px)}90%{transform:translateX(-4px)}}
+
+/* ---------- 체크리스트 · 토글 ---------- */
+.chk{display:flex;align-items:center;gap:22px;padding:15px 24px;border-radius:0;background:var(--panel);border:2px solid var(--ink);font-size:33px;cursor:pointer;transition:.25s;user-select:none}
+.chk .bx{width:42px;height:42px;border-radius:0;border:3px solid var(--ink);display:grid;place-items:center;font-size:28px;color:transparent;transition:.2s;flex:none}
+.chk.is-done{background:#d8e8dd;border-color:var(--green)}
+.chk.is-done .bx{background:var(--green);border-color:var(--green);color:var(--paper)}
+.chk small{margin-left:auto;font:500 24px var(--mono);color:var(--dim)}
+.tp{padding:18px 24px;border-radius:0;background:var(--panel);border:2px solid var(--ink);font-size:32px;font-weight:700;cursor:pointer;display:flex;gap:16px;align-items:center;transition:.2s;user-select:none}
+.tp:hover{transform:translateY(-3px)}
+.tp.sel{background:var(--acc);color:var(--paper);border-color:var(--acc)}
+.tp span{font-size:42px}
+.sw{display:flex;align-items:center;gap:20px;padding:16px 24px;border-radius:0;background:var(--panel);border:2px solid var(--ink);cursor:pointer;font:700 30px var(--sans);color:var(--ink);text-align:left;width:100%}
+.sw .knob{width:84px;height:44px;border-radius:22px;background:#8d8b84;position:relative;flex:none;transition:.3s}
+.sw .knob::after{content:'';position:absolute;left:5px;top:5px;width:34px;height:34px;border-radius:50%;background:#fff;transition:.3s}
+.sw.is-on .knob{background:var(--green)}
+.sw.is-on .knob::after{left:45px}
+.sw small{display:block;font:500 22px var(--mono);color:var(--dim);margin-top:2px}
+.gates{display:flex;align-items:center;gap:0}
+.person{font-size:86px;flex:none}
+.gate{flex:none;width:210px;height:210px;border-radius:0;border:5px solid;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;transition:.35s;text-align:center;font-size:26px;font-weight:800}
+.gate .gi{font-size:66px;line-height:1}
+.gate.closed{border-color:var(--acc);background:#f1d9d0}
+.gate.open{border-color:var(--green);background:#d8e8dd}
+.res{border-radius:0;padding:22px 30px;font-size:30px;line-height:1.45;border:0;border-left:10px solid;animation:zoom .45s both}
+.res b{display:block;font:700 32px var(--mono);margin-bottom:4px}
+.res.bad{background:#f1d9d0;border-color:var(--acc)}
+.res.warn{background:#efe4cc;border-color:var(--amber)}
+.res.ok{background:#d8e8dd;border-color:var(--green)}
+
+/* ---------- 파이프라인 · 단계 ---------- */
+.pl{display:flex;align-items:center;gap:0}
+.stg{flex:1;background:var(--panel);border:3px solid var(--ink);border-radius:0;padding:24px 14px;text-align:center;font-size:29px;font-weight:700;position:relative;min-height:200px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;line-height:1.35}
+.stg .ic{font-size:50px;line-height:1}
+.stg small{font-size:23px;color:var(--dim);font-weight:400}
+.stg .tick{position:absolute;top:-20px;right:-16px;width:46px;height:46px;border-radius:0;background:var(--green);color:var(--paper);font:800 28px/46px var(--sans);text-align:center;transform:scale(0)}
+.pl .arr{flex:none;width:44px;text-align:center;font-size:40px;color:var(--ink)}
+.on .stg{animation:stg 1s both;animation-delay:calc(var(--k)*1.5s + .8s)}
+.on .stg .tick{animation:tick .5s both;animation-delay:calc(var(--k)*1.5s + 1.6s)}
+@keyframes stg{0%{border-color:var(--ink);background:var(--panel)}30%{border-color:var(--acc);background:#f1d9d0}100%{border-color:var(--green);background:#d8e8dd}}
+@keyframes tick{from{transform:scale(0)}to{transform:scale(1)}}
+.on .stg.a.pop{animation-name:pop;animation-duration:.7s;animation-delay:calc(var(--d,0)*.12s + .12s)}
+.stp{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+.sc{background:var(--panel);border:1px solid var(--line);border-top:5px solid var(--ink);border-radius:0;padding:22px 28px;font-size:30px;line-height:1.4;position:relative;display:flex;flex-direction:column;gap:8px}
+.sc .no{font:800 30px var(--sans);color:var(--paper);background:var(--ink);align-self:flex-start;padding:2px 16px;border-radius:0}
+.sc b{font-size:34px}
+.sc small{font-size:25px;color:var(--dim)}
+.sc.new{border-top-color:var(--acc);background:#f1d9d0}
+.sc.new .no{background:var(--acc)}
+.map{display:grid;grid-template-columns:repeat(13,1fr);gap:8px}
+.mt{border-radius:0;padding:14px 0;text-align:center;font:800 40px var(--sans);border:3px solid var(--ink);display:flex;flex-direction:column;gap:2px;background:transparent}
+.mt small{font:500 22px var(--sans)}
+.mt.ag{background:var(--ink);color:var(--paper)}
+.mt.me{background:transparent}
+.mt.bo{background:var(--acc);border-color:var(--acc);color:var(--paper)}
+
+/* ---------- 오버레이 UI ---------- */
+#prog{position:fixed;left:0;top:0;height:6px;background:var(--acc);width:0;transition:width .4s;z-index:60}
+#ctr{position:fixed;right:18px;bottom:10px;font:500 18px var(--mono);color:#8c8a82;z-index:60}
+#nav{position:fixed;left:50%;bottom:10px;transform:translateX(-50%);display:flex;gap:10px;opacity:0;transition:.3s;z-index:60}
+body:hover #nav{opacity:.85}
+#nav button,#mbtn{width:44px;height:44px;border-radius:50%;border:2px solid #16161b;background:#f2efe8;color:#16161b;font-size:20px;cursor:pointer}
+#mbtn{position:fixed;right:16px;top:16px;z-index:61;opacity:.3}
+#mbtn:hover{opacity:1}
+#menu{position:fixed;right:0;top:0;bottom:0;width:min(440px,100vw);max-width:100%;background:#16161b;transform:translateX(100%);transition:.3s;overflow:auto;z-index:70;padding:20px 18px 40px;font:500 18px var(--sans);color:#d7d5cd}
+#menu.open{transform:none}
+#menu h4{margin:18px 8px 6px;font:700 16px var(--sans);color:#8f8d85;letter-spacing:.08em}
+#menu a{display:flex;gap:12px;padding:8px 12px;cursor:pointer;color:#d7d5cd;text-decoration:none}
+#menu a:hover{background:#26262d}
+#menu a.cur{background:#c93d14;color:#fff}
+#menu a span{color:#8f8d85;font-family:var(--mono);width:30px;flex:none}
+#menu a.cur span{color:#fff}
+#hint{position:fixed;left:50%;top:22px;transform:translateX(-50%);background:#16161b;color:#f2efe8;padding:10px 22px;font:500 18px var(--sans);z-index:65;transition:opacity .6s}
+#cf{position:absolute;left:0;top:0;width:1920px;height:1080px;pointer-events:none;z-index:5}
+
+/* ---------- 슬라이드별 ---------- */
+.cover{flex-direction:row;align-items:center;gap:50px}
+.cv-l{flex:1.2;display:flex;flex-direction:column;gap:26px}
+.cv-l h1{font-size:126px;line-height:1.08;letter-spacing:-.05em}
+.cv-r{flex:1;display:flex;align-items:center}
+.swap{position:relative;display:inline-block}
+.swap b{font-weight:800}
+.swap .s1{color:var(--acc);animation:sw1 6s infinite}
+.swap .s2{position:absolute;left:0;top:0;white-space:nowrap;color:#ffb08f;animation:sw2 6s infinite;opacity:0}
+@keyframes sw1{0%,38%{opacity:1}45%,92%{opacity:0}100%{opacity:1}}
+@keyframes sw2{0%,38%{opacity:0}45%,92%{opacity:1}100%{opacity:0}}
+.wipe{position:absolute;inset:0;background:#fff;animation:wipe 6s ease-in-out infinite}
+@keyframes wipe{0%,10%{clip-path:inset(0 100% 0 0)}45%,80%{clip-path:inset(0 0 0 0)}100%{clip-path:inset(0 100% 0 0)}}
+.view{position:absolute;inset:0;padding:22px 26px;background:#f6f7ff}
+.v-list{animation:vlist 8s infinite}
+.v-det{animation:vdet 8s infinite}
+@keyframes vlist{0%,40%{opacity:1}46%,90%{opacity:0}96%,100%{opacity:1}}
+@keyframes vdet{0%,40%{opacity:0}46%,90%{opacity:1}96%,100%{opacity:0}}
+.finger{position:absolute;font-size:56px;animation:fing 8s infinite;z-index:3;left:75%;top:85%;opacity:0}
+@keyframes fing{0%{left:75%;top:85%;opacity:0;transform:scale(1)}12%{left:52%;top:44%;opacity:1}30%{left:52%;top:44%;transform:scale(1)}34%{transform:scale(.8)}38%{transform:scale(1)}44%{left:52%;top:44%;opacity:0}52%{left:30%;top:12%;opacity:0}60%{left:30%;top:12%;opacity:1;transform:scale(1)}80%{left:30%;top:12%;transform:scale(1)}84%{transform:scale(.8)}88%{transform:scale(1)}94%{opacity:0}100%{left:75%;top:85%;opacity:0}}
+.sync{position:relative}
+.sync .nr{animation:nrow 9s infinite}
+.sync .nc{animation:ncard 9s infinite}
+@keyframes nrow{0%,10%{opacity:0;transform:translateY(-24px)}20%,92%{opacity:1;transform:none}100%{opacity:0}}
+@keyframes ncard{0%,50%{opacity:0;transform:translateY(-30px)}62%,92%{opacity:1;transform:none}100%{opacity:0}}
+.sync .nr td{background:#d9fbe9}
+.arrowx{font-size:90px;color:var(--acc);animation:arr 9s infinite}
+@keyframes arr{0%,32%{opacity:.2;transform:scale(1)}40%{opacity:1;transform:scale(1.25)}52%,100%{opacity:.2;transform:scale(1)}}
+.typew{display:inline-block;overflow:hidden;white-space:nowrap;vertical-align:bottom;max-width:0;animation:typew 9s steps(14) infinite}
+@keyframes typew{0%,5%{max-width:0}30%,90%{max-width:420px}100%{max-width:0}}
+.on .tickrow{animation:rise .6s both;animation-delay:calc(var(--d)*.5s + .6s)}
+.tickrow{opacity:0}
+.hole{animation:hole 4s ease-in-out infinite alternate}
+@keyframes hole{from{transform:rotate(-8deg)}to{transform:rotate(6deg)}}
+.loading{height:14px;background:var(--panel2);overflow:hidden;border:2px solid var(--ink)}
+.loading i{display:block;height:100%;width:0;background:var(--acc);animation:load 12s ease-in-out infinite}
+@keyframes load{0%{width:4%}80%{width:92%}100%{width:100%}}
+.cy{animation:cyc 9s infinite;position:absolute;left:0;right:0;text-align:center;opacity:0}
+.cy:nth-child(2){animation-delay:3s}.cy:nth-child(3){animation-delay:6s}
+@keyframes cyc{0%{opacity:0;transform:translateY(16px)}6%,30%{opacity:1;transform:none}36%,100%{opacity:0}}
+.sav{font-size:230px;line-height:1;animation:pulse 2s ease-in-out infinite}
+
+
+/* ---------- 이 수업용 ---------- */
+/* 히어로 목업 */
+.hm{display:flex;flex-direction:column;gap:14px;padding:26px 6px 22px;border-bottom:2px dashed #cfd3ee;margin-bottom:16px}
+.hm-k{font:700 18px var(--mono);color:#7a80a8;letter-spacing:.06em}
+.hm-t{font:900 46px/1.1 var(--sans);letter-spacing:-.04em;color:#1d2140}
+.hm-t em{font-style:normal;color:#4a5bff}
+.hm-s{font-size:22px;color:#5a5f86}
+.hm-b{display:flex;gap:12px}
+.btn.ghost{background:none;color:#4a5bff;box-shadow:inset 0 0 0 2px #4a5bff}
+/* About 목업 */
+.ab{display:flex;gap:18px;align-items:flex-start;padding:6px 0 16px;border-bottom:2px dashed #cfd3ee;margin-bottom:16px}
+.ab .ph{flex:none;width:96px;height:96px;border-radius:50%;background:linear-gradient(150deg,#c9cff8,#8f9af0)}
+.ab-k{font:700 18px var(--mono);color:#7a80a8;letter-spacing:.06em;margin-bottom:6px}
+.ab p{font-size:21px;line-height:1.55;color:#3b4070;margin-bottom:6px}
+.ab p b{color:#1d2140}
+/* 스킬 목록 목업 */
+.sk{display:flex;flex-direction:column;gap:12px}
+.sk-g{font:800 19px var(--sans);color:#7a80a8;letter-spacing:.04em}
+.sk-r{display:flex;gap:10px;flex-wrap:wrap}
+.sk-r span{display:inline-flex;align-items:baseline;gap:8px;background:#fff;border:2px solid #cfd3ee;border-radius:10px;padding:6px 14px;font:700 21px var(--sans);color:#1d2140}
+.sk-r span small{font:500 16px var(--sans);color:#7a80a8}
+.sk-r.lt span{background:none;border-style:dashed}
+/* 버튼 제각각 */
+.mis{display:flex;flex-direction:column;gap:18px}
+.mis .ln{display:flex;align-items:center;gap:20px;font:500 22px var(--mono);color:#7a80a8}
+.mis .ln span:first-child{width:170px;flex:none}
+.b1{background:#4a5bff;color:#fff;padding:10px 26px;border-radius:8px;font:700 24px var(--sans)}
+.b2{background:#2f9e6b;color:#fff;padding:6px 14px;border-radius:0;font:500 20px var(--sans)}
+.b3{background:none;color:#e0603a;padding:12px 34px;border-radius:999px;border:3px solid #e0603a;font:800 26px var(--sans)}
+.on .mis .fix{animation:unify 6s infinite}
+@keyframes unify{0%,45%{}55%,92%{background:#4a5bff;color:#fff;padding:10px 26px;border-radius:8px;border:0;font:700 24px var(--sans)}}
+/* 차례로 나타나는 움직임 */
+.stag>*{opacity:0}
+.on .stag>*{animation:stag 6s infinite both;animation-delay:calc(var(--i)*.4s + .6s)}
+@keyframes stag{0%{opacity:0;transform:translateY(26px)}10%,80%{opacity:1;transform:none}92%,100%{opacity:0;transform:none}}
+.lib{display:grid;grid-template-columns:repeat(4,1fr);border-top:5px solid var(--ink)}
+.lib>div{padding:24px 22px;border-right:1px solid var(--line);display:flex;flex-direction:column;gap:12px}
+.lib>div:last-child{border-right:0}
+.lib b{font:800 40px var(--sans);letter-spacing:-.03em}
+.lib p{font-size:26px;line-height:1.45;color:var(--dim)}
+.lib small{font:500 21px var(--mono);color:var(--acc);margin-top:auto}
+.lib .em{font-size:56px;line-height:1}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><symbol id="db" viewBox="0 0 120 140"><ellipse cx="60" cy="26" rx="50" ry="20" fill="currentColor"/><path d="M10 26v88c0 11 22 20 50 20s50-9 50-20V26c0 11-22 20-50 20S10 37 10 26z" fill="currentColor" opacity=".85"/><path d="M10 62c0 11 22 20 50 20s50-9 50-20M10 98c0 11 22 20 50 20s50-9 50-20" stroke="#f2efe8" stroke-width="5" fill="none" opacity=".55"/></symbol></svg>
+<div id="stage">
+<div class="bg"></div>
+
+
+<section class="slide cover" data-sec="시작" data-title="표지">
+  <div class="cv-l">
+    <div class="a" style="--d:0"><span class="badge me">바이브코딩 · 포트폴리오 4주차 · 마지막 날</span></div>
+    <h1 class="a" style="--d:1"><em>About</em>과<br>마무리</h1>
+    <p class="a lead dim" style="--d:2">소개와 스킬을 채우고 섹션마다 다른 모양을 맞춘 뒤<br>GSAP으로 움직임을 넣어 최종 배포하고 발표함</p>
+    <div class="a chips" style="--d:3"><span>About Me</span><span>스킬</span><span>디자인 시스템</span><span>GSAP</span><span>README</span><span>발표</span></div>
+  </div>
+  <div class="cv-r a zoom" style="--d:3;justify-content:center">
+    <div class="browser float" style="width:620px">
+      <div class="bb"><i></i><i></i><i></i><div class="url">내아이디.github.io/my-portfolio/#about</div></div>
+      <div class="pg">
+        <div class="ab">
+          <span class="ph"></span>
+          <div><div class="ab-k">ABOUT ME</div>
+            <p><b>화면을 직접 만드는 디자이너</b></p>
+            <p>4주 동안 블로그·SNS 피드·포트폴리오를 만들었음</p>
+          </div>
+        </div>
+        <div class="sk">
+          <div class="sk-g">자주 씀</div>
+          <div class="sk-r"><span>Claude Code <small>전부</small></span><span>Figma <small>SNS 피드</small></span></div>
+          <div class="sk-g">써 봄</div>
+          <div class="sk-r lt"><span>Supabase <small>블로그</small></span><span>GSAP <small>포트폴리오</small></span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-sec="시작" data-title="오늘 흐름">
+  <div class="hd a"><span class="badge me">전체 흐름</span></div>
+  <h2 class="a sm" style="--d:1">오늘은 <em>여덟 칸</em>으로 감</h2>
+  <div class="rd">
+    <div class="rdh a" style="--d:2"><span class="day">채우기</span> 내용과 모양 정리</div>
+    <div class="road">
+      <div class="node a pop" style="--d:3"><div class="dot">0</div><b>복습</b><small>20분</small></div>
+      <div class="node a pop" style="--d:4"><div class="dot">1</div><b>About Me</b><small>25분</small></div>
+      <div class="node a pop" style="--d:5"><div class="dot">2</div><b>스킬 섹션</b><small>25분</small></div>
+      <div class="node a pop" style="--d:6"><div class="dot">3</div><b>모양 맞추기</b><small>20분</small></div>
+    </div>
+    <div class="rdh a" style="--d:7"><span class="day d2">마무리</span> 움직임, 배포, 발표</div>
+    <div class="road p">
+      <div class="node a pop" style="--d:8"><div class="dot">4</div><b>GSAP 움직임</b><small>30분</small></div>
+      <div class="node a pop" style="--d:9"><div class="dot">5</div><b>전체 점검</b><small>10분</small></div>
+      <div class="node a pop" style="--d:10"><div class="dot">6</div><b>README·배포</b><small>10분</small></div>
+      <div class="node a pop" style="--d:11"><div class="dot">7</div><b>발표</b><small>1인 3분</small></div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-sec="시작" data-title="지시하는 방식">
+  <div class="hd a"><span class="badge agent">💬 오늘 지시하는 방식</span></div>
+  <h2 class="a" style="--d:1">어제와 같음. 지시는 <em>짧게</em>, 확인은 꼼꼼히</h2>
+  <div class="tri a" style="--d:2;margin-top:30px">
+    <div><b><em>무엇을</em></b><p>만들 것 하나<br><code>About 컴포넌트를 고쳐줘</code></p></div>
+    <div><b><em>무엇으로</em></b><p>내가 쓴 숙제<br><code>요구사항.md 의 소개 항목대로</code></p></div>
+    <div><b><em>하지 말 것</em></b><p>건드리면 안 되는 것<br><code>새 라이브러리는 설치하지 마</code></p></div>
+  </div>
+  <div class="call tip a" style="--d:4;margin-top:50px"><span class="ic">📝</span><div>소개 문구와 스킬 목록은 <b>내가 쓴 숙제</b>에서 나와야 함. 다듬는 건 AI가 해도 내용은 내가 정함</div></div>
+</section>
+
+<section class="slide" data-sec="0. 복습" data-title="휴대폰으로 열기">
+  <div class="hd a"><span class="stepno">0</span><span class="badge me">🖱 내가 직접</span></div>
+  <h2 class="a sm" style="--d:1">내 사이트를 <em>휴대폰</em>으로 열기</h2>
+  <div class="body" style="gap:40px">
+    <div class="col g1" style="gap:20px">
+      <p class="lead a" style="--d:2"><code>내아이디.github.io/my-portfolio/</code></p>
+      <p class="md dim a" style="--d:3">PC 기기 모드와 실제 폰은 다르게 보이는 경우가 있음</p>
+      <div class="term a left" style="--d:4"><div class="tb"><i></i><i></i><i></i><span>터미널 · 시작 전에 커밋</span></div><pre class="type" data-delay="1400">git add .
+git commit -m "4주차 2일차 시작 전 상태"</pre></div>
+    </div>
+    <div class="col g15">
+      <table class="tbl a" style="--d:5;font-size:28px">
+        <tr><th>어제 상태</th><th>지금 할 일 (Hero와 Projects 교안)</th></tr>
+        <tr><td>Hero를 못 만듦</td><td>2번부터</td></tr>
+        <tr><td>걸러 보기·모달을 못 만듦</td><td>3번부터</td></tr>
+        <tr><td>배포를 못 함</td><td>4-2</td></tr>
+        <tr><td><b style="color:var(--acc)">다 끝냄</b></td><td>"추가 과제"에서 하나<br><span class="dim">등장 움직임은 오늘 4번에서 하니 빼고</span></td></tr>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section class="slide divider" data-sec="1. About Me" data-title="1장 시작">
+  <div class="dv-big a" style="--d:0">1</div>
+  <h2 class="a" style="--d:2"><em>About Me</em> 소개</h2>
+  <p class="lead dim a" style="--d:3">히어로가 한 줄이면 About은 몇 문단. "이 사람 뭐지?" 하고 내려온 사람에게 자세히 알려 줌</p>
+</section>
+
+<section class="slide" data-sec="1. About Me" data-title="숙제 꺼내기">
+  <div class="hd a"><span class="stepno">1-1</span><span class="badge me">🖱 내가 직접</span><span class="badge both">5분</span></div>
+  <h2 class="a" style="--d:1">어제 숙제 <em>세 줄</em> 꺼내기</h2>
+  <div class="body" style="gap:50px">
+    <div class="col g15">
+      <table class="tbl a" style="--d:2;font-size:34px">
+        <tr><th>줄</th><th>쓸 것</th></tr>
+        <tr><td><b>1</b></td><td>나는 누구인가</td></tr>
+        <tr><td><b>2</b></td><td>무엇을 만들어 왔나</td></tr>
+        <tr><td><b>3</b></td><td>앞으로 무엇을 하고 싶나</td></tr>
+      </table>
+    </div>
+    <div class="col g1 mid">
+      <div class="call tip a" style="--d:4"><span class="ic">✍️</span><div>안 써 왔으면 지금 씀. 문장이 어색해도 됨<br><b>다듬는 건 AI가 해도 내용은 내가 정함</b></div></div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-sec="1. About Me" data-title="요구사항 갱신하고 다듬기">
+  <div class="hd a"><span class="stepno">1-2</span><span class="badge agent">💬 에이전트에게</span><span class="badge both">8분</span></div>
+  <h2 class="a sm" style="--d:1">요구사항 갱신하고 <em>문장 다듬기</em></h2>
+  <div class="body">
+    <div class="col g15" style="gap:18px">
+      <div class="term a left" style="--d:2"><div class="tb"><i></i><i></i><i></i><span>claude</span></div><pre class="type" style="font-size:25px">docs/요구사항.md 의 소개 항목을 아래 세 줄로
+바꿔줘. 코드는 고치지 마
+[숙제 세 줄]</pre></div>
+      <p class="md dim a" style="--d:3">다듬고 싶으면 후보를 받아서 고름</p>
+      <div class="term a left" style="--d:4"><div class="tb"><i></i><i></i><i></i><span>claude</span></div><pre class="type" data-delay="2400" style="font-size:25px">요구사항.md 의 소개를 포트폴리오에 맞게 다듬은
+버전 2개만 줘. 내용은 더하지 말고. 코드는 고치지 마</pre></div>
+    </div>
+    <div class="col g1 mid">
+      <div class="call warn a" style="--d:6"><span class="ic">✂️</span><div><b>내용은 더하지 않게</b><br>AI는 "열정적인", "끊임없이 성장하는" 같은 말을 잘 붙임. 내가 쓰지 않은 내용이 들어갔으면 빼 달라고 함</div></div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-sec="1. About Me" data-title="About 고치고 확인">
+  <div class="hd a"><span class="stepno">1-3</span><span class="badge agent">💬 에이전트에게</span><span class="badge both">8분</span><span class="stepno" style="margin-left:20px">1-4</span><span class="badge me">👀 확인</span><span class="badge both">4분</span></div>
+  <h2 class="a sm" style="--d:1">About 고치고 <em>확인</em></h2>
+  <div class="body" style="gap:40px">
+    <div class="col g1" style="gap:18px">
+      <div class="term a left" style="--d:2"><div class="tb"><i></i><i></i><i></i><span>claude</span></div><pre class="type" style="font-size:25px">요구사항.md 의 소개 항목대로 About 컴포넌트를 고쳐줘
+Hero 와 같은 문장이 반복되면 About 쪽에서 빼줘</pre></div>
+      <p class="md dim a" style="--d:3">사진을 넣으려면 한 장을 <code>public/images/</code>에 넣고 파일 이름을 알려 줌</p>
+    </div>
+    <div class="col g1" style="gap:12px">
+      <div class="chk a" style="--d:4;font-size:30px"><span class="bx">✓</span>히어로와 같은 문장이 두 번 나오지 않는가</div>
+      <div class="chk a" style="--d:5;font-size:30px"><span class="bx">✓</span>내가 쓰지 않은 말이 들어가 있지 않은가</div>
+      <div class="chk a" style="--d:6;font-size:30px"><span class="bx">✓</span>문단이 휴대폰 한 화면을 꽉 채우지 않는가</div>
+      <p class="md dim a" style="--d:7">꽉 채우면 UI/UX 용어 정리의 행간·여백 용어로 고침</p>
+    </div>
+  </div>
+</section>
+
+<section class="slide divider" data-sec="2. 스킬 섹션" data-title="2장 시작">
+  <div class="dv-big a" style="--d:0">2</div>
+  <h2 class="a" style="--d:2"><em>스킬</em> 섹션</h2>
+  <p class="lead dim a" style="--d:3">쓸 줄 아는 도구를 묶고 어디에 썼는지 붙여서 About 안에 넣음</p>
+</section>
+
+<section class="slide" data-sec="2. 스킬 섹션" data-title="도구 묶기">
+  <div class="hd a"><span class="stepno">2-1</span><span class="badge me">🖱 내가 직접</span><span class="badge both">8분</span></div>
+  <h2 class="a sm" style="--d:1">도구를 <em>두 묶음</em>으로</h2>
+  <div class="body" style="gap:40px">
+    <div class="col g1" style="gap:20px">
+      <table class="tbl a" style="--d:2;font-size:29px">
+        <tr><th>묶음</th><th>예시 기준</th></tr>
+        <tr><td><b>자주 씀</b></td><td>이번 과정에서 두 번 이상 썼거나 혼자 설명할 수 있음</td></tr>
+        <tr><td><b>써 봄</b></td><td>한 번 써 봤거나 따라 해 봄</td></tr>
+      </table>
+      <p class="md a" style="--d:3">옆에 <b>어디에 썼는지</b>를 한 단어씩 붙임. 작업물 이름이면 됨. 묶음 이름은 각자 정해도 됨</p>
+    </div>
+    <div class="col g1" style="gap:20px">
+      <div class="browser a right" style="--d:4"><div class="bb"><i></i><i></i><i></i><div class="url">#about</div></div>
+        <div class="pg"><div class="sk">
+          <div class="sk-g">자주 씀</div>
+          <div class="sk-r"><span>Claude Code <small>전부</small></span><span>React <small>포트폴리오</small></span><span>Figma <small>SNS 피드</small></span></div>
+          <div class="sk-g">써 봄</div>
+          <div class="sk-r lt"><span>Supabase <small>블로그</small></span><span>Swiper <small>SNS 피드</small></span></div>
+        </div></div>
+      </div>
+      <div class="call tip a" style="--d:6;font-size:26px"><span class="ic">📊</span><div>숙련도를 %나 막대로 보여 주면 "80%는 무슨 기준이냐"는 질문에 답하기 어려움. 어디에 썼는지를 붙이는 쪽이 설명하기 쉬움</div></div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-sec="2. 스킬 섹션" data-title="스킬 섹션 만들고 확인">
+  <div class="hd a"><span class="stepno">2-2</span><span class="badge agent">💬 에이전트에게</span><span class="badge both">12분</span><span class="stepno" style="margin-left:20px">2-3</span><span class="badge me">👀 확인</span><span class="badge both">5분</span></div>
+  <h2 class="a sm" style="--d:1">스킬 섹션 만들고 <em>확인</em></h2>
+  <div class="body" style="gap:40px">
+    <div class="col g1" style="gap:18px">
+      <div class="term a left" style="--d:2"><div class="tb"><i></i><i></i><i></i><span>claude</span></div><pre class="type" style="font-size:24px">요구사항.md 에 스킬 항목을 아래처럼 추가하고,
+그걸로 스킬 섹션을 About 안에 만들어줘
+[2-1에서 나눈 묶음과 도구]
+새 라이브러리는 설치하지 마</pre></div>
+      <p class="md dim a" style="--d:3">모양은 지시하지 않음. 결과를 보고 고침</p>
+    </div>
+    <div class="col g1" style="gap:12px">
+      <div class="chk a" style="--d:4;font-size:30px"><span class="bx">✓</span>도구 이름 옆에 어디에 썼는지가 보이는가</div>
+      <div class="chk a" style="--d:5;font-size:30px"><span class="bx">✓</span>아이콘이 전부 같은 세트인가<small>굵기·모양</small></div>
+      <div class="chk a" style="--d:6;font-size:30px"><span class="bx">✓</span>휴대폰 폭에서 줄바꿈이 어색하지 않은가</div>
+    </div>
+  </div>
+  <div class="goal a" style="--d:8"><span class="lb">커밋</span><code>git commit -m "About 과 스킬 섹션"</code></div>
+</section>
+
+<section class="slide divider" data-sec="3. 모양 맞추기" data-title="3장 시작">
+  <div class="dv-big a" style="--d:0">3</div>
+  <h2 class="a" style="--d:2">전체 <em>모양 맞추기</em></h2>
+  <p class="lead dim a" style="--d:3">4주 동안 섹션을 따로 만들어서 버튼·색·여백이 제각각임. 움직임을 넣기 전에 한 번에 맞춤</p>
+</section>
+
+<section class="slide" data-sec="3. 모양 맞추기" data-title="다른 곳 찾기">
+  <div class="hd a"><span class="stepno">3-1</span><span class="badge me">🖱 내가 직접</span><span class="badge both">5분</span></div>
+  <h2 class="a sm" style="--d:1">스크롤하며 <em>다른 곳</em> 메모</h2>
+  <div class="body" style="gap:40px">
+    <div class="col g15">
+      <table class="tbl a" style="--d:2;font-size:29px">
+        <tr><th>볼 곳</th><th>예</th></tr>
+        <tr><td><b>버튼</b></td><td>히어로 버튼과 방명록 버튼 모양이 다름</td></tr>
+        <tr><td><b>색</b></td><td>강조색이 섹션마다 조금씩 다름</td></tr>
+        <tr><td><b>여백</b></td><td>어떤 섹션은 빽빽하고 어떤 섹션은 휑함</td></tr>
+        <tr><td><b>글자</b></td><td>섹션 제목 크기가 제각각</td></tr>
+      </table>
+    </div>
+    <div class="col g1 mid a right" style="--d:4">
+      <div class="browser"><div class="bb"><i></i><i></i><i></i><div class="url">my-portfolio</div></div>
+        <div class="pg" style="padding:30px 30px">
+          <div class="mis">
+            <div class="ln"><span>#hero</span><span class="b1">작업물 보기</span></div>
+            <div class="ln"><span>#projects</span><span class="b2 fix">자세히</span></div>
+            <div class="ln"><span>#guestbook</span><span class="b3 fix">남기기</span></div>
+          </div>
+        </div>
+      </div>
+      <p class="md dim" style="margin-top:14px">같은 사이트 안의 버튼 세 개</p>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-sec="3. 모양 맞추기" data-title="디자인 시스템 문서로 묶기">
+  <div class="hd a"><span class="stepno">3-2</span><span class="badge agent">💬 에이전트에게</span><span class="badge both">10분</span></div>
+  <h2 class="a sm" style="--d:1">규칙을 <em>디자인 시스템 문서</em>로</h2>
+  <p class="md dim a" style="--d:2;margin-bottom:22px">용어 정리 실무 팁에 있던 방식. 규칙을 문서로 두고 AI가 매번 그걸 따르게 함</p>
+  <div class="stp" style="align-items:stretch">
+    <div class="col a" style="--d:3;gap:10px"><div class="sc" style="padding:14px 22px"><span class="no">1 · 정리</span></div>
+      <div class="term" style="flex:1"><pre class="type" style="font-size:22px">지금 App.css 에서 쓰는 색, 글자 크기,
+여백, 버튼 모양을 정리해서
+docs/디자인시스템.md 로 만들어줘.
+코드는 고치지 마</pre></div></div>
+    <div class="col a" style="--d:5;gap:10px"><div class="sc" style="padding:14px 22px"><span class="no">2 · 줄이기</span></div>
+      <div class="term" style="flex:1"><pre class="type" data-delay="1600" style="font-size:22px">디자인시스템.md 의
+[색 / 글자 크기 / 여백]을
+[내가 정한 개수]개로 줄여줘.
+코드는 고치지 마</pre></div></div>
+    <div class="col a" style="--d:7;gap:10px"><div class="sc new" style="padding:14px 22px"><span class="no">3 · 적용</span></div>
+      <div class="term" style="flex:1"><pre class="type" data-delay="2300" style="font-size:22px">디자인시스템.md 기준으로 App.css 를
+맞춰줘. 값은 CSS 변수로 빼고,
+화면 구조는 바꾸지 마
+CLAUDE.md 에 "화면을 만들거나 고칠 때
+docs/디자인시스템.md 를 따름"
+한 줄 추가해줘</pre></div></div>
+  </div>
+  <div class="call tip a" style="--d:9;margin-top:22px;font-size:27px"><span class="ic">✋</span><div>1번 문서를 열어 보고 값이 너무 많으면 줄임. <b>몇 개로 줄일지는 내가 정함</b></div></div>
+</section>
+
+<section class="slide" data-sec="3. 모양 맞추기" data-title="모양 맞춘 뒤 확인">
+  <div class="hd a"><span class="stepno">3-3</span><span class="badge me">👀 확인</span><span class="badge both">5분</span></div>
+  <h2 class="a sm" style="--d:1">맞춘 뒤 <em>확인</em></h2>
+  <div class="body" style="gap:40px">
+    <div class="col g15" style="gap:12px">
+      <div class="chk a" style="--d:2"><span class="bx">✓</span>3-1 메모에 적은 곳이 맞춰졌는가</div>
+      <div class="chk a" style="--d:3"><span class="bx">✓</span>맞추다가 잘 되던 화면이 깨지지 않았는가</div>
+      <div class="chk a" style="--d:4"><span class="bx">✓</span>CLAUDE.md 에 한 줄이 들어갔는가</div>
+    </div>
+    <div class="col g1 mid">
+      <div class="call bad a" style="--d:6"><span class="ic">💥</span><div><b>화면이 깨졌으면</b><br><code>git restore .</code> 후 한 항목씩 다시 시킴</div></div>
+    </div>
+  </div>
+  <div class="goal a" style="--d:8"><span class="lb">커밋</span><code>git commit -m "디자인 시스템 정리"</code></div>
+</section>
+
+<section class="slide divider" data-sec="4. GSAP 움직임" data-title="4장 시작">
+  <div class="dv-big a" style="--d:0">4</div>
+  <h2 class="a" style="--d:2">JS 라이브러리와 <em>GSAP</em> 움직임</h2>
+  <p class="lead dim a" style="--d:3">데모를 구경하고 GSAP 하나만 내 포트폴리오에 붙임</p>
+</section>
+
+<section class="slide" data-sec="4. GSAP 움직임" data-title="라이브러리란">
+  <div class="hd a"><span class="badge me">용어</span></div>
+  <h2 class="a sm" style="--d:1">라이브러리는 <em>남이 만들어 둔 기능 묶음</em></h2>
+  <p class="lead a" style="--d:2">SNS 피드 때 캐러셀을 만든 <b>Swiper</b>가 그 예</p>
+  <div class="body" style="gap:36px;margin-top:40px;flex:none">
+    <div class="card g1 a left" style="--d:3;border-top-color:var(--acc)"><h3>이름을 알면</h3><p class="md dim" style="margin-top:8px">문법을 몰라도 <b style="color:var(--ink)">이름과 무엇을 할 수 있는지</b>만 말하면 AI가 코드를 씀</p></div>
+    <div class="card g1 a right" style="--d:4;border-top-color:var(--dim)"><h3>이름을 모르면</h3><p class="md dim" style="margin-top:8px">AI가 직접 짜거나 엉뚱한 방법을 골라서 결과가 약하게 나옴</p></div>
+  </div>
+</section>
+
+<section class="slide" data-sec="4. GSAP 움직임" data-title="구경하기">
+  <div class="hd a"><span class="stepno">4-1</span><span class="badge me">🖱 내가 직접</span><span class="badge both">8분</span></div>
+  <h2 class="a sm" style="--d:1">"이게 웹에서 된다고?" <em>하나 메모</em></h2>
+  <div class="lib a" style="--d:2">
+    <div><span class="em">🧊</span><b>three.js</b><p>3D 모델 돌리기, 3D 배경, 마우스를 따라 움직이는 입체 화면</p><small>threejs.org/examples</small></div>
+    <div><span class="em">🎬</span><b>GSAP</b><p>여러 요소가 순서대로 움직이는 연출. ScrollTrigger로 스크롤에 맞춰 나타나고 멈춤</p><small>gsap.com/showcase</small></div>
+    <div><span class="em">🫧</span><b>Lottie</b><p>디자이너가 만든 움직이는 일러스트를 가볍게 재생</p><small>lottiefiles.com</small></div>
+    <div><span class="em">🎱</span><b>Matter.js</b><p>물체가 떨어지고 튕기고 부딪히는 2D 물리 효과</p><small>brm.io/matter-js</small></div>
+  </div>
+  <div class="row a" style="--d:4;margin-top:30px;gap:40px;font-size:27px;line-height:1.45">
+    <p class="dim" style="flex:none;font-weight:800">더 알아 두면 좋은 이름</p>
+    <p><b>Lenis</b> 부드러운 스크롤. GSAP와 같이 씀</p>
+    <p><b>Chart.js</b> 막대·선·도넛 그래프</p>
+    <p><b>Motion</b> React용 애니메이션. 예전 이름 Framer Motion</p>
+  </div>
+  <p class="src">메모는 한 줄이면 됨 · 어디서 봤는지, 어떤 움직임인지</p>
+</section>
+
+<section class="slide" data-sec="4. GSAP 움직임" data-title="자리와 움직임 정하기">
+  <div class="hd a"><span class="stepno">4-2</span><span class="badge me">🖱 내가 직접</span></div>
+  <h2 class="a sm" style="--d:1">넣을 자리는 <em>한두 곳만</em></h2>
+  <div class="body" style="gap:40px">
+    <div class="col g15" style="gap:18px">
+      <table class="tbl a" style="--d:2;font-size:27px">
+        <tr><th>자리</th><th>움직임 예</th></tr>
+        <tr><td><b>히어로</b></td><td>접속하면 제목 → 소개 → 버튼이 차례로 나타남</td></tr>
+        <tr><td><b>섹션</b></td><td>스크롤해서 화면에 들어오면 나타남 (ScrollTrigger)</td></tr>
+        <tr><td><b>작업물 카드</b></td><td>카드가 하나씩 차례로 등장</td></tr>
+        <tr><td><b>스킬</b></td><td>도구 목록이 차례로 나타남</td></tr>
+      </table>
+      <p class="md dim a" style="--d:3">고른 자리의 움직임을 내 말로 적음. 어디서 나타나는지(아래·옆·제자리), 빠른지 느린지, 순서가 있는지</p>
+    </div>
+    <div class="col g1 mid a right" style="--d:4;gap:14px">
+      <div class="browser"><div class="bb"><i></i><i></i><i></i><div class="url">my-portfolio</div></div>
+        <div class="pg"><div class="hm stag" style="border:0;margin:0">
+          <div class="hm-t" style="--i:0">화면을 <em>직접</em><br>만드는 사람</div>
+          <div class="hm-s" style="--i:1">React · Supabase로 만든 작업물 3개</div>
+          <div class="hm-b" style="--i:2"><span class="btn">작업물 보기</span><span class="btn ghost">연락하기</span></div>
+        </div></div>
+      </div>
+      <p class="md dim">페이드 인 · 지속 시간 · 이징 같은 <b style="color:var(--ink)">UI/UX 용어 5장</b> 말을 쓰면 더 정확해짐</p>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-sec="4. GSAP 움직임" data-title="커밋하고 지시">
+  <div class="hd a"><span class="stepno">4-2</span><span class="badge both">💬🖱 둘 다</span><span class="badge both">GSAP</span></div>
+  <h2 class="a sm" style="--d:1"><em>커밋 먼저</em>, 그다음 지시</h2>
+  <div class="body" style="gap:40px">
+    <div class="col g1" style="gap:16px">
+      <p class="md dim a" style="--d:2">🖱 망가져도 돌아올 지점을 만듦</p>
+      <div class="term a left" style="--d:3"><div class="tb"><i></i><i></i><i></i><span>터미널</span></div><pre class="type">git add .
+git commit -m "GSAP 넣기 전"</pre></div>
+    </div>
+    <div class="col g15" style="gap:16px">
+      <p class="md dim a" style="--d:4">💬 고른 자리와 내 말로 적은 움직임을 넣음</p>
+      <div class="term a right" style="--d:5"><div class="tb"><i></i><i></i><i></i><span>claude</span></div><pre class="type" data-delay="2200" style="font-size:26px">GSAP으로 [고른 자리]에 [내가 적은 움직임]을 넣어줘
+GSAP 설치가 필요하면 먼저 이유를 말해줘.
+다른 라이브러리는 설치하지 마</pre></div>
+    </div>
+  </div>
+  <div class="call tip a" style="--d:7;margin-top:22px"><span class="ic">🎁</span><div>GSAP은 웹 애니메이션에서 가장 널리 쓰이는 라이브러리 중 하나이고 상업적 사용까지 무료임</div></div>
+</section>
+
+<section class="slide" data-sec="4. GSAP 움직임" data-title="움직임 확인">
+  <div class="hd a"><span class="stepno">4-2</span><span class="badge me">👀 확인</span></div>
+  <h2 class="a sm" style="--d:1">움직임 <em>확인</em></h2>
+  <div class="body" style="gap:36px">
+    <div class="col g15" style="gap:10px">
+      <div class="chk a" style="--d:2;font-size:28px"><span class="bx">✓</span>움직임이 끝난 뒤 내용이 제자리에 다 보이는가</div>
+      <div class="chk a" style="--d:3;font-size:28px"><span class="bx">✓</span>새로고침해도 매번 같은가</div>
+      <div class="chk a" style="--d:4;font-size:28px"><span class="bx">✓</span>스크롤을 빠르게 내렸다 올려도 괜찮은가</div>
+      <div class="chk a" style="--d:5;font-size:28px"><span class="bx">✓</span>휴대폰 폭에서 버벅이지 않는가</div>
+      <div class="chk a" style="--d:6;font-size:28px"><span class="bx">✓</span>동작 줄이기를 켜면 움직임이 꺼지는가</div>
+    </div>
+    <div class="col g1" style="gap:14px;justify-content:center">
+      <div class="call tip a" style="--d:7;font-size:25px"><span class="ic">🛠</span><div><b>동작 줄이기 켜 보기</b><br><code>F12</code> → ⋮ → More tools → Rendering → <code>prefers-reduced-motion</code>을 <code>reduce</code>로</div></div>
+      <div class="term a right" style="--d:8"><div class="tb"><i></i><i></i><i></i><span>claude · 안 꺼지면</span></div><pre class="type" data-delay="2800" style="font-size:23px">동작 줄이기 설정을 켠 사람에게는
+움직임을 꺼줘</pre></div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-sec="4. GSAP 움직임" data-title="안 되면 의심할 것">
+  <div class="hd a"><span class="stepno">4-2</span><span class="badge agent">💬 에이전트에게</span></div>
+  <h2 class="a sm" style="--d:1">안 되면 의심할 것, 그리고 <em>다듬기</em></h2>
+  <div class="th3 a" style="--d:2;grid-template-columns:1fr 2fr"><span>증상</span><span>이렇게 함</span></div>
+  <div class="tr3 f" style="grid-template-columns:1fr 2fr"><span class="sy">요소가 안 보임</span><span class="fx">애니메이션이 끝났는데 [어디]가 안 보여. 원인 찾아서 고쳐줘</span></div>
+  <div class="tr3 f" style="grid-template-columns:1fr 2fr"><span class="sy">두 번 실행되는 것 같음</span><span class="fx">애니메이션이 두 번 실행돼. React 개발 모드 때문인지 확인하고 고쳐줘</span></div>
+  <div class="tr3 f" style="grid-template-columns:1fr 2fr"><span class="sy">화면이 통째로 깨짐</span><span class="fx"><code>git restore .</code>로 방금 커밋한 지점으로 돌아가서 한 곳만 다시</span></div>
+  <div class="call tip a" style="--d:6;margin-top:36px"><span class="ic">🎚</span><div><b>다듬기</b> · 너무 빠르거나 느리거나 과하면 용어로 말함. 지속 시간을 줄여 달라거나, 끝에서 천천히 멈추게 이징을 바꿔 달라거나, 나타나는 거리를 줄여 달라고 함</div></div>
+  <div class="goal a" style="--d:8;margin-top:auto"><span class="lb">커밋</span><code>git commit -m "GSAP 움직임 추가"</code></div>
+</section>
+
+<section class="slide" data-sec="4. GSAP 움직임" data-title="다른 라이브러리 시험">
+  <div class="hd a"><span class="stepno">4-3</span><span class="badge agent">💬 에이전트에게</span><span class="badge both">다 끝낸 사람</span></div>
+  <h2 class="a sm" style="--d:1">다른 라이브러리는 <em>파일 하나로</em> 시험</h2>
+  <div class="body" style="gap:40px">
+    <div class="col g15" style="gap:18px">
+      <div class="term a left" style="--d:2"><div class="tb"><i></i><i></i><i></i><span>claude</span></div><pre class="type" style="font-size:24px">prototype/[이름]-test.html 파일 하나로
+[4-1에서 메모한 효과]를 [라이브러리 이름]으로
+만들어줘. 실제 프로젝트 파일은 건드리지 마</pre></div>
+      <p class="md dim a" style="--d:3">SNS 때 시안 파일 열던 방법 그대로 열어 봄. 포트폴리오에 붙이는 건 수업 끝난 뒤에 함</p>
+    </div>
+    <div class="col g1" style="gap:10px">
+      <p class="md a" style="--d:4"><b>움직임을 넣을 때 알아 둘 것</b></p>
+      <table class="tbl a" style="--d:5;font-size:25px">
+        <tr><th>볼 것</th><th>이유</th></tr>
+        <tr><td>휴대폰에서 느려지지 않나</td><td>3D와 물리 효과는 특히 무거움</td></tr>
+        <tr><td>너무 많이 움직이지 않나</td><td>내용이 안 읽힘. 한 페이지에 한두 곳</td></tr>
+        <tr><td>동작 줄이기</td><td>움직임에 어지럼을 느끼는 사람이 있음</td></tr>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section class="slide divider" data-sec="5. 점검과 배포" data-title="5·6장 시작">
+  <div class="dv-big a" style="--d:0">5·6</div>
+  <h2 class="a" style="--d:2">전체 점검과 <em>최종 배포</em></h2>
+  <p class="lead dim a" style="--d:3">어제·오늘 체크리스트를 합쳐 보고 README를 정리해서 올림</p>
+</section>
+
+<section class="slide" data-sec="5. 점검과 배포" data-title="전체 점검">
+  <div class="hd a"><span class="stepno">5</span><span class="badge me">👀 확인</span><span class="badge both">10분</span></div>
+  <h2 class="a sm" style="--d:1">안 되는 것만 <em>고침</em></h2>
+  <div class="body" style="gap:24px">
+    <div class="col g1" style="gap:9px">
+      <div class="chk a" style="--d:2;font-size:28px;padding:14px 22px"><span class="bx">✓</span>휴대폰 폭에서 가로로 밀리는 곳이 없는가</div>
+      <div class="chk a" style="--d:2;font-size:28px;padding:14px 22px"><span class="bx">✓</span>Tab 키만으로 메뉴 → 버튼 → 칩 → 카드 → 연락처</div>
+      <div class="chk a" style="--d:3;font-size:28px;padding:14px 22px"><span class="bx">✓</span>버튼에 올리고 누를 때 모양이 바뀌는가</div>
+      <div class="chk a" style="--d:3;font-size:28px;padding:14px 22px"><span class="bx">✓</span>걸러서 0개, 방명록 0개가 어색하지 않은가</div>
+      <div class="chk a" style="--d:4;font-size:28px;padding:14px 22px"><span class="bx">✓</span>모달을 딤·Esc·닫기 버튼으로 닫아 봤는가</div>
+    </div>
+    <div class="col g1" style="gap:9px">
+      <div class="chk a" style="--d:4;font-size:28px;padding:14px 22px"><span class="bx">✓</span>회색 글자가 배경 위에서 읽히는가</div>
+      <div class="chk a" style="--d:5;font-size:28px;padding:14px 22px"><span class="bx">✓</span>메뉴를 누르면 맞는 섹션으로 가는가<small>About</small></div>
+      <div class="chk a" style="--d:5;font-size:28px;padding:14px 22px"><span class="bx">✓</span>움직임이 끝난 뒤 안 보이는 요소가 없는가</div>
+      <div class="chk a" style="--d:6;font-size:28px;padding:14px 22px"><span class="bx">✓</span>배포 주소에서 사진이 다 나오는가</div>
+    </div>
+  </div>
+  <div class="goal a" style="--d:8"><span class="lb">막히면</span><code>[무엇을] 했더니 [무엇이] 됐어. 원인 찾아서 고쳐줘</code></div>
+</section>
+
+<section class="slide" data-sec="5. 점검과 배포" data-title="README 정리">
+  <div class="hd a"><span class="stepno">6-1</span><span class="badge agent">💬 에이전트에게</span></div>
+  <h2 class="a sm" style="--d:1">저장소 첫 화면 <em>README</em></h2>
+  <div class="body" style="gap:40px">
+    <div class="col g1" style="gap:18px;justify-content:center">
+      <p class="lead a" style="--d:2">포트폴리오 링크를 받은 사람이 저장소를 열어 보기도 함</p>
+      <p class="md dim a" style="--d:3">지금 README에는 Vite 기본 안내문이 들어 있는 경우가 많음</p>
+    </div>
+    <div class="col g15" style="justify-content:center">
+      <div class="term a right" style="--d:4"><div class="tb"><i></i><i></i><i></i><span>claude</span></div><pre class="type" style="font-size:25px">README.md 를 이 포트폴리오 설명으로 바꿔줘
+넣을 것: [배포 주소, 쓴 도구, 화면 캡처 등
+내가 고른 항목]
+요구사항.md 를 참고하고 내가 쓰지 않은 내용은
+넣지 마</pre></div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-sec="5. 점검과 배포" data-title="최종 배포">
+  <div class="hd a"><span class="stepno">6-2</span><span class="badge me">🖱 내가 직접</span></div>
+  <h2 class="a sm" style="--d:1"><em>최종</em> 배포</h2>
+  <table class="tbl a" style="--d:2;font-size:29px">
+    <tr><th>1주차에 고른 방법</th><th>할 일</th></tr>
+    <tr><td>방법 A (GitHub Actions)</td><td><code>git push</code> 후 Actions 탭에서 초록 체크 확인</td></tr>
+    <tr><td>방법 B (gh-pages 브랜치)</td><td><code>npm run deploy</code> 후 <code>git push</code></td></tr>
+  </table>
+  <div class="th3 a" style="--d:3;margin-top:26px;grid-template-columns:1fr 2fr"><span>안 되면</span><span>이렇게 함</span></div>
+  <div class="tr3 f" style="grid-template-columns:1fr 2fr"><span class="sy">예전 화면이 그대로</span><span class="fx"><code>Ctrl + Shift + R</code></span></div>
+  <div class="tr3 f" style="grid-template-columns:1fr 2fr"><span class="sy">Actions 빨간 X</span><span class="fx">로그를 복사해 "빌드가 실패했어. any 쓰지 말고 고쳐줘"</span></div>
+  <div class="tr3 f" style="grid-template-columns:1fr 2fr"><span class="sy">배포 주소에서만 안 움직임</span><span class="fx">배포 주소에서 GSAP 애니메이션이 안 나와. 원인 찾아서 고쳐줘</span></div>
+  <div class="goal a" style="--d:6;margin-top:auto"><span class="lb">여기까지 하면</span>배포 주소에 오늘 바꾼 내용과 움직임, 저장소 첫 화면에 README. 배포 주소를 단톡에 올림</div>
+</section>
+
+<section class="slide divider" data-sec="7. 발표" data-title="7장 시작">
+  <div class="dv-big a" style="--d:0">7</div>
+  <h2 class="a" style="--d:2"><em>발표</em></h2>
+  <p class="lead dim a" style="--d:3">한 사람당 3분. 듣는 사람은 내 휴대폰으로 열어 봄</p>
+</section>
+
+<section class="slide" data-sec="7. 발표" data-title="말할 것 세 가지">
+  <div class="hd a"><span class="stepno">7-1</span><span class="badge me">발표자</span><span class="badge both">3분</span></div>
+  <h2 class="a sm" style="--d:1">말할 것 <em>세 가지</em></h2>
+  <div class="tri a" style="--d:2;margin-top:20px">
+    <div><b><em>1</em> 무엇을 만들었나</b><p>포트폴리오에 들어간 작업물</p></div>
+    <div><b><em>2</em> 내가 정한 것</b><p>레퍼런스에서 가져온 것, 분류 방식, 움직임을 넣은 자리 등</p></div>
+    <div><b><em>3</em> 막힌 것과 푼 방법</b><p>하나만, 구체적으로</p></div>
+  </div>
+  <p class="md dim a" style="--d:4;margin-top:30px">"포트폴리오 정리와 잡기능"에서 카드에 쓴 "내가 정한 것", "막힌 것" 문장을 그대로 읽어도 됨</p>
+</section>
+
+<section class="slide" data-sec="7. 발표" data-title="듣는 사람이 할 일">
+  <div class="hd a"><span class="stepno">7-2</span><span class="badge me">듣는 사람</span></div>
+  <h2 class="a sm" style="--d:1">써 보다 <em>걸리는 곳 하나</em> 말해 주기</h2>
+  <div class="body" style="gap:40px">
+    <div class="col g1" style="gap:20px;justify-content:center">
+      <p class="lead a" style="--d:2">발표자의 배포 주소를 내 휴대폰으로 열어 봄</p>
+      <div class="call ok a" style="--d:3"><span class="ic">💬</span><div>칭찬보다 <b>"여기서 뭘 눌러야 할지 몰랐음"</b> 같은 말이 더 도움이 됨</div></div>
+    </div>
+    <div class="col g1 mid">
+      <div class="card a right" style="--d:5;border-top-color:var(--acc)"><h3>발표자는</h3><p class="md dim" style="margin-top:8px">들은 걸 메모해 둠. 수업 뒤에 고칠 목록이 됨</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-sec="마무리" data-title="수업 끝난 뒤에">
+  <div class="hd a"><span class="stepno">8</span><span class="badge me">수업 끝난 뒤에</span></div>
+  <h2 class="a sm" style="--d:1">혼자서도 <em>이어서</em> 고침</h2>
+  <div class="body" style="gap:40px">
+    <div class="col g1" style="gap:16px">
+      <p class="md a" style="--d:2"><b>작업물 하나 추가하는 법</b></p>
+      <ol class="ls sm a" style="--d:3;font-size:28px">
+        <li><code>my-portfolio</code>에서 <code>claude</code> 실행</li>
+        <li>작업물 배열에 항목 하나 추가하라고 지시. 배열만 고치게 함</li>
+        <li>화면 확인 → 커밋 → 푸시(또는 <code>npm run deploy</code>)</li>
+      </ol>
+      <p class="md dim a" style="--d:4">다른 라이브러리는 커밋해 두고 붙임. 깨지면 <code>git restore .</code></p>
+    </div>
+    <div class="col g1" style="gap:12px">
+      <table class="tbl a" style="--d:5;font-size:26px">
+        <tr><th>남겨 둔 파일</th><th>역할</th></tr>
+        <tr><td><code>docs/요구사항.md</code></td><td>무엇을 만들지. 고칠 때 여기부터</td></tr>
+        <tr><td><code>docs/디자인시스템.md</code></td><td>어떤 모양으로. 새 화면도 이 값을 따름</td></tr>
+        <tr><td><code>CLAUDE.md</code></td><td>에이전트 작업 규칙</td></tr>
+      </table>
+      <p class="md dim a" style="--d:6">이 세 파일이 있으면 몇 달 뒤에 다시 열어도 에이전트가 같은 방식으로 이어서 작업함</p>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-sec="마무리" data-title="체크리스트">
+  <div class="hd a"><span class="badge me">체크리스트</span></div>
+  <h2 class="a sm" style="--d:1">마지막 배포 <em>전에</em></h2>
+  <div class="body" style="gap:24px">
+    <div class="col g1" style="gap:10px">
+      <div class="chk a" style="--d:2;font-size:28px"><span class="bx">✓</span>About에 내가 쓰지 않은 말이 없는가</div>
+      <div class="chk a" style="--d:3;font-size:28px"><span class="bx">✓</span>스킬마다 어디에 썼는지 붙어 있는가</div>
+      <div class="chk a" style="--d:4;font-size:28px"><span class="bx">✓</span>섹션끼리 버튼·색·여백이 맞는가</div>
+      <div class="chk a" style="--d:5;font-size:28px"><span class="bx">✓</span>움직임은 한두 곳, 동작 줄이기에 꺼지는가</div>
+    </div>
+    <div class="col g1" style="gap:10px">
+      <div class="chk a" style="--d:6;font-size:28px"><span class="bx">✓</span>휴대폰으로 실제 접속해 봤는가</div>
+      <div class="chk a" style="--d:7;font-size:28px"><span class="bx">✓</span>README에 배포 주소가 있는가</div>
+      <div class="chk a" style="--d:8;font-size:28px"><span class="bx">✓</span>단톡에 배포 주소를 올렸는가</div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-sec="마무리" data-title="실무 활용 팁">
+  <div class="hd a"><span class="badge me">실무 활용 팁</span></div>
+  <h2 class="a sm" style="--d:1">현장에서도 <em>그대로</em> 씀</h2>
+  <ul class="ls sm a" style="--d:2;font-size:29px">
+    <li>포트폴리오 링크를 보낼 때는 <b>배포 주소와 저장소 주소</b>를 같이 보냄</li>
+    <li>발표 피드백은 메모해 뒀다가 하나씩 처리함. 한꺼번에 시키면 무엇 때문에 바뀌었는지 모름</li>
+    <li>작업물이 늘면 오래된 것부터 빼도 됨. 개수보다 카드마다 "내가 정한 것"이 보이는 쪽이 나음</li>
+    <li>처음 보는 효과는 <code>이런 효과에 맞는 라이브러리 후보 3개 알려줘</code>로 이름부터 물어봄</li>
+    <li>움직임은 레이아웃이 다 정해진 뒤에 넣음. 먼저 넣으면 모양을 고칠 때마다 다시 맞춰야 함</li>
+  </ul>
+  <div class="card a" style="--d:4;margin-top:auto;border-top-color:var(--dim);padding:20px 30px"><h3 style="font-size:28px" class="dim">심화 · 지금은 몰라도 됨</h3>
+    <ul class="ls sm" style="margin-top:10px;font-size:24px;gap:8px"><li><b>내 도메인</b> : GitHub Pages 설정의 Custom domain에서 <code>내이름.com</code>을 연결</li><li><b>방문자 수</b> : 분석 도구가 필요하고 개인정보 안내도 같이 필요해서 오늘은 안 다룸</li><li><b>React Three Fiber</b> : React에서 three.js를 쓸 때 같이 쓰는 연결용 라이브러리</li><li><b>SplitText</b> : 글자를 한 글자씩 쪼개 움직이는 GSAP 플러그인. 지금은 무료</li></ul>
+  </div>
+</section>
+
+<section class="slide" data-sec="마무리" data-title="헷갈리는 용어">
+  <div class="hd a"><span class="badge me">헷갈리는 용어</span></div>
+  <h2 class="a sm" style="--d:1">비슷해 보이는 <em>두 단어</em></h2>
+  <table class="tbl a" style="--d:2;font-size:27px">
+    <tr><th>용어</th><th>차이</th></tr>
+    <tr><td><b>히어로 / About</b></td><td>히어로는 첫 화면 한 줄, About은 내려와서 읽는 자세한 소개</td></tr>
+    <tr><td><b>요구사항.md / 디자인시스템.md</b></td><td>요구사항은 무엇을 만들지, 디자인 시스템은 어떤 모양으로 만들지</td></tr>
+    <tr><td><b>README / 요구사항.md</b></td><td>README는 저장소를 보는 남에게, 요구사항은 나와 에이전트가 보는 작업 문서</td></tr>
+    <tr><td><b>라이브러리 / 도구</b></td><td>라이브러리는 내 코드 안에 넣어 씀(Swiper, GSAP). 도구는 밖에서 쓰는 프로그램(Claude Code, Figma)</td></tr>
+    <tr><td><b>트랜지션 / 애니메이션</b></td><td>트랜지션은 상태가 바뀔 때 부드럽게 넘어감(호버 색 변화). 애니메이션은 정해진 움직임을 재생함(등장 연출). GSAP은 주로 후자</td></tr>
+  </table>
+</section>
+
+<section class="slide" data-sec="마무리" data-title="용어">
+  <div class="hd a"><span class="badge me">오늘 쓴 용어</span></div>
+  <h2 class="a sm" style="--d:1">용어 <em>9개</em></h2>
+  <div class="body" style="gap:36px">
+    <table class="tbl a g1" style="--d:2;font-size:26px">
+      <tr><th>용어</th><th>설명</th></tr>
+      <tr><td><b>About Me</b></td><td>나를 자세히 소개하는 섹션</td></tr>
+      <tr><td><b>스킬 섹션</b></td><td>쓸 줄 아는 도구를 보여 주는 영역</td></tr>
+      <tr><td><b>디자인 시스템</b></td><td>색·글자·여백·버튼 모양 규칙을 모아 둔 문서</td></tr>
+      <tr><td><b>CSS 변수</b></td><td><code>--color-primary</code>처럼 값에 이름을 붙여 여러 곳에서 같이 쓰는 방법</td></tr>
+      <tr><td><b>README</b></td><td>저장소 첫 화면에 보이는 설명 파일</td></tr>
+    </table>
+    <table class="tbl a g1" style="--d:3;font-size:26px">
+      <tr><th>용어</th><th>설명</th></tr>
+      <tr><td><b>라이브러리</b></td><td>남이 미리 만들어 둔 기능 묶음. 이름을 알면 AI가 가져다 씀</td></tr>
+      <tr><td><b>GSAP</b></td><td>웹 애니메이션 라이브러리. 여러 요소를 순서대로 움직이는 데 강함</td></tr>
+      <tr><td><b>ScrollTrigger</b></td><td>GSAP에 딸린 기능. 스크롤 위치에 맞춰 움직임을 시작하거나 멈춤</td></tr>
+      <tr><td><b>동작 줄이기</b></td><td>기기 설정에서 애니메이션을 줄이는 옵션. 켠 사람에게는 움직임을 꺼 줌</td></tr>
+    </table>
+  </div>
+  <p class="src">참고: three.js · GSAP · Vite 공식 문서(정적 사이트 배포)</p>
+</section>
+
+<section class="slide" data-sec="마무리" data-title="마무리" data-confetti="1">
+  <div class="hd a"><span class="badge me">마무리</span></div>
+  <h2 class="a" style="--d:1">포트폴리오가 <em>완성</em>됐음</h2>
+  <div class="row" style="gap:22px;flex-wrap:wrap">
+    <div class="card a pop" style="--d:2;flex:1 1 22%;text-align:center"><div style="font-size:60px">🙋</div><p class="md">내 숙제로 쓴 <b>About</b>과 스킬</p></div>
+    <div class="card a pop" style="--d:3;flex:1 1 22%;text-align:center"><div style="font-size:60px">📐</div><p class="md">한 벌로 맞춘 <b>디자인 시스템</b></p></div>
+    <div class="card a pop" style="--d:4;flex:1 1 22%;text-align:center"><div style="font-size:60px">🎬</div><p class="md">한두 곳에 넣은 <b>GSAP</b> 움직임</p></div>
+    <div class="card a pop" style="--d:5;flex:1 1 22%;text-align:center"><div style="font-size:60px">🚀</div><p class="md">README와 <b>최종 배포</b></p></div>
+  </div>
+  <p class="lead dim a" style="--d:7;margin-top:auto">4주 동안 수고 많았음. 발표에서 들은 걸 하나씩 고쳐 나가면 됨</p>
+</section>
+
+
+<canvas id="cf"></canvas>
+</div><!-- /#stage -->
+
+<div id="prog"></div>
+<div id="ctr"></div>
+<div id="nav"><button id="bp" title="이전">◀</button><button id="bn" title="다음">▶</button></div>
+<button id="mbtn" title="슬라이드 목록 (g)">☰</button>
+<div id="menu"></div>
+<div id="hint">← → 이동 · g 목록 · f 전체화면</div>
+
+<script>
+(function(){
+  var stage=document.getElementById('stage');
+  var slides=[].slice.call(stage.querySelectorAll('.slide'));
+  var N=slides.length, cur=0, fragTimers=[];
+  var typeTimers=[];
+
+  /* ----- 화면 크기에 맞춰 1920x1080 무대를 축소 ----- */
+  function fit(){
+    var w=document.documentElement.clientWidth||window.innerWidth,h=window.innerHeight;
+    var s=Math.min(w/1920,h/1080);
+    stage.style.transform='translate('+(w-1920*s)/2+'px,'+(h-1080*s)/2+'px) scale('+s+')';
+  }
+  window.addEventListener('resize',fit); fit();
+
+  /* ----- 타자 효과 ----- */
+  slides.forEach(function(sl){
+    [].forEach.call(sl.querySelectorAll('.type'),function(el){
+      el.dataset.full=el.textContent;
+      el.innerHTML='<span class="t1"></span><span class="t2" style="visibility:hidden"></span>';
+      el.querySelector('.t2').textContent=el.dataset.full;
+    });
+  });
+  function setTyped(el,n){
+    var full=el.dataset.full;
+    el.querySelector('.t1').textContent=full.slice(0,n);
+    el.querySelector('.t2').textContent=full.slice(n);
+  }
+  function stopTypers(){typeTimers.forEach(function(t){clearTimeout(t);clearInterval(t)});typeTimers=[]}
+  function startTypers(sl){
+    [].forEach.call(sl.querySelectorAll('.type'),function(el){
+      setTyped(el,0); el.classList.remove('fin');
+      var delay=parseInt(el.dataset.delay||'900',10), n=0, full=el.dataset.full;
+      var t=setTimeout(function(){
+        var iv=setInterval(function(){
+          n+=3; if(n>=full.length){n=full.length;clearInterval(iv);el.classList.add('fin')}
+          setTyped(el,n);
+        },24);
+        typeTimers.push(iv);
+      },delay);
+      typeTimers.push(t);
+    });
+  }
+  function finishTypers(sl){
+    [].forEach.call(sl.querySelectorAll('.type'),function(el){setTyped(el,el.dataset.full.length);el.classList.add('fin')});
+  }
+
+  /* ----- 이동 ----- */
+  function frags(i){return [].slice.call(slides[i].querySelectorAll('.f'))}
+  function go(i,opt){
+    opt=opt||{};
+    i=Math.max(0,Math.min(N-1,i)); cur=i;
+    slides.forEach(function(s,k){
+      s.classList.toggle('on',k===i);
+      s.classList.toggle('before',k<i);
+      s.classList.toggle('after',k>i);
+    });
+    var fs=frags(i);
+    fragTimers.forEach(clearTimeout); fragTimers=[];
+    fs.forEach(function(f){f.classList.remove('show')});
+    /* 표 줄(.f)은 키를 누르지 않아도 차례로 나타남. 뒤로 왔을 때는 바로 다 보임 */
+    if(opt.end) fs.forEach(function(f){f.classList.add('show')});
+    else fs.forEach(function(f,k){fragTimers.push(setTimeout(function(){if(cur===i)f.classList.add('show')},600+k*350))});
+    stopTypers();
+    if(opt.end) finishTypers(slides[i]); else startTypers(slides[i]);
+    stopConfetti();
+    if(slides[i].hasAttribute('data-confetti')) setTimeout(function(){if(cur===i)startConfetti()},700);
+    document.getElementById('prog').style.width=((i+1)/N*100)+'%';
+    document.getElementById('ctr').textContent=(i+1)+' / '+N;
+    [].forEach.call(document.querySelectorAll('#menu a'),function(a,k){a.classList.toggle('cur',k===i)});
+    try{history.replaceState(null,'','#'+(i+1))}catch(e){}
+  }
+  function next(){
+    if(cur<N-1) go(cur+1);
+  }
+  function prev(){
+    if(cur>0) go(cur-1,{end:true});
+  }
+
+  /* ----- 키보드 · 터치 ----- */
+  document.addEventListener('keydown',function(e){
+    if(e.ctrlKey||e.metaKey||e.altKey) return;
+    var k=e.key;
+    if(k==='ArrowRight'||k==='PageDown'||k===' '||k==='Enter'){e.preventDefault();next()}
+    else if(k==='ArrowLeft'||k==='PageUp'||k==='Backspace'){e.preventDefault();prev()}
+    else if(k==='Home'){go(0)}
+    else if(k==='End'){go(N-1)}
+    else if(k==='g'||k==='G'||k==='m'){toggleMenu()}
+    else if(k==='Escape'){document.getElementById('menu').classList.remove('open')}
+    else if(k==='f'||k==='F'){
+      if(!document.fullscreenElement){document.documentElement.requestFullscreen&&document.documentElement.requestFullscreen()}
+      else{document.exitFullscreen&&document.exitFullscreen()}
+    }
+  });
+  var tx=null;
+  document.addEventListener('touchstart',function(e){tx=e.touches[0].clientX},{passive:true});
+  document.addEventListener('touchend',function(e){
+    if(tx===null)return; var dx=e.changedTouches[0].clientX-tx; tx=null;
+    if(Math.abs(dx)>60){dx<0?next():prev()}
+  },{passive:true});
+  document.getElementById('bn').onclick=function(){this.blur();next()};
+  document.getElementById('bp').onclick=function(){this.blur();prev()};
+
+  /* ----- 목록 메뉴 ----- */
+  var menu=document.getElementById('menu'), last='';
+  slides.forEach(function(s,i){
+    var sec=s.dataset.sec||'';
+    if(sec!==last){var h=document.createElement('h4');h.textContent=sec;menu.appendChild(h);last=sec}
+    var a=document.createElement('a');
+    a.innerHTML='<span>'+(i+1)+'</span>'+(s.dataset.title||('슬라이드 '+(i+1)));
+    a.onclick=function(){go(i);menu.classList.remove('open')};
+    menu.appendChild(a);
+  });
+  function toggleMenu(){menu.classList.toggle('open')}
+  document.getElementById('mbtn').onclick=function(){this.blur();toggleMenu()};
+
+  /* ----- 체크리스트 · 주제 카드 ----- */
+  [].forEach.call(document.querySelectorAll('.chk:not(.tickrow)'),function(c){
+    c.onclick=function(){c.classList.toggle('is-done')};
+  });
+  var tps=[].slice.call(document.querySelectorAll('.tp'));
+  tps.forEach(function(t){
+    t.onclick=function(){
+      tps.forEach(function(x){x.classList.remove('sel')});
+      t.classList.add('sel');
+      var out=document.getElementById('topicOut'); if(out) out.textContent=t.dataset.t;
+    };
+  });
+
+  /* ----- 체험 스위치 (.demo) -----
+     .demo 안에 .sw[data-k] 스위치, .gate[data-k] 관문, .case[data-needs="a b"] 결과 블록을 둠
+     켜진 스위치에 needs 가 모두 맞는 .case 중 needs 가 가장 많은 것 하나만 보임
+     needs 가 빈 .case 는 기본(모두 꺼짐) 결과. 상태 클래스는 is-on / open / closed 를 씀 */
+  [].forEach.call(document.querySelectorAll('.demo'),function(demo){
+    var on={};
+    function draw(){
+      [].forEach.call(demo.querySelectorAll('.gate[data-k]'),function(g){
+        var o=!!on[g.dataset.k];
+        g.classList.toggle('open',o); g.classList.toggle('closed',!o);
+        var gi=g.querySelector('.gi');
+        if(gi) gi.textContent=o?(g.dataset.iconOn||'🔓'):(g.dataset.iconOff||'🔒');
+      });
+      var cases=[].slice.call(demo.querySelectorAll('.case')), best=null, bn=-1;
+      cases.forEach(function(c){
+        var needs=(c.dataset.needs||'').split(/\s+/).filter(Boolean);
+        var ok=needs.every(function(k){return on[k]});
+        if(ok&&needs.length>bn){best=c;bn=needs.length}
+      });
+      cases.forEach(function(c){c.style.display=(c===best)?'':'none'});
+    }
+    [].forEach.call(demo.querySelectorAll('.sw[data-k]'),function(b){
+      b.onclick=function(){on[b.dataset.k]=!on[b.dataset.k];b.classList.toggle('is-on',!!on[b.dataset.k]);b.blur();draw()};
+    });
+    draw();
+  });
+
+  /* ----- 색종이 ----- */
+  var cv=document.getElementById('cf'), cx=cv.getContext('2d'), parts=[], raf=null;
+  cv.width=1920; cv.height=1080;
+  function startConfetti(){
+    parts=[]; var cols=['#c93d14','#16161b','#1b7f52','#2147c9','#a96b00','#5f5e58'];
+    for(var i=0;i<260;i++){
+      parts.push({x:Math.random()*1920,y:-Math.random()*1000-20,w:10+Math.random()*14,h:16+Math.random()*16,
+        vx:(Math.random()-.5)*3,vy:2+Math.random()*5,r:Math.random()*6,vr:(Math.random()-.5)*.3,c:cols[i%cols.length]});
+    }
+    (function loop(){
+      cx.clearRect(0,0,1920,1080);
+      parts.forEach(function(p){
+        p.x+=p.vx; p.y+=p.vy; p.r+=p.vr;
+        cx.save(); cx.translate(p.x,p.y); cx.rotate(p.r); cx.fillStyle=p.c; cx.fillRect(-p.w/2,-p.h/2,p.w,p.h); cx.restore();
+      });
+      parts=parts.filter(function(p){return p.y<1120});
+      if(parts.length){raf=requestAnimationFrame(loop)}else{raf=null}
+    })();
+  }
+  function stopConfetti(){if(raf){cancelAnimationFrame(raf);raf=null}cx.clearRect(0,0,1920,1080);parts=[]}
+
+  /* ----- 칩 걸러 보기 체험 ----- */
+  [].forEach.call(document.querySelectorAll('.fdemo'),function(d){
+    var chips=[].slice.call(d.querySelectorAll('.fchips span')), cards=[].slice.call(d.querySelectorAll('.pc')), empty=d.querySelector('.empty');
+    chips.forEach(function(c){
+      c.onclick=function(){
+        chips.forEach(function(x){x.classList.toggle('sel',x===c)});
+        var k=c.dataset.c, n=0;
+        cards.forEach(function(p){var ok=!k||p.dataset.c===k;p.style.display=ok?'':'none';if(ok)n++});
+        if(empty) empty.style.display=n?'none':'';
+      };
+    });
+  });
+
+  /* ----- 시작 ----- */
+  var start=parseInt((location.hash||'').replace('#',''),10);
+  go(isNaN(start)?0:start-1);
+  setTimeout(function(){var h=document.getElementById('hint');h.style.opacity=0;setTimeout(function(){h.style.display='none'},700)},5000);
+})();
+</script>
+</body>
+</html>
